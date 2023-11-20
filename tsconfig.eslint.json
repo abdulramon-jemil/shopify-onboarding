@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src", "lint-staged.config.js", ".eslintrc.js", ".prettierrc.js"]
+}
