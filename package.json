@@ -10,6 +10,7 @@
     "lint:check": "eslint ./ --ext .js,.ts",
     "lint:fix": "eslint ./ --fix --ext .js,.ts",
     "prepare": "husky install",
+    "start": "cd src && live-server --port=8000",
     "type:check": "tsc -p tsconfig.json --noEmit"
   },
   "keywords": [],
