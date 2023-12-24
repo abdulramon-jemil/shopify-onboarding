@@ -3271,9 +3271,6 @@ const setupSetupGuideAccordion = (state, checkboxes) => {
   const root = selectElement(selectors.root, HTMLDivElement)
   const itemRoots = selectAllElements(selectors.itemRoots, HTMLDivElement, root)
 
-  const defaultItemRoot = itemRoots[0]
-  assertIsDefined(defaultItemRoot, "first accordion item")
-
   const itemNames = /** @type {const} */ ([
     "customize-store",
     "add-product",
@@ -3352,7 +3349,7 @@ const setupSetupGuideAccordion = (state, checkboxes) => {
   })
 }
 
-const setupScrollbarCSSVar = () => {
+const setupCSSRelatedFunctions = () => {
   new ResizeObserver(() => {
     document.documentElement.style.setProperty(
       "--root-vertical-scrollbar-width",
@@ -3362,8 +3359,8 @@ const setupScrollbarCSSVar = () => {
 }
 
 window.addEventListener("load", () => {
-  // Set up the CSS variable for scrollbar width
-  setupScrollbarCSSVar()
+  // Anything related to functioning of CSS e.g. CSS vars.
+  setupCSSRelatedFunctions()
 
   setupNotificationPopover()
   setupStoreButtonDropdownMenu()
