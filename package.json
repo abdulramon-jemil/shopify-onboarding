@@ -1,5 +1,5 @@
 {
-  "name": "shopify-dashboard",
+  "name": "shopify-onboarding",
   "version": "1.0.0",
   "description": "A simple repreduction of the Shopify onboarding dashboard",
   "main": "src/app.js",

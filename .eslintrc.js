@@ -19,15 +19,21 @@ module.exports = {
   plugins: ["@typescript-eslint"],
 
   rules: {
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/no-unnecessary-boolean-literal-compare": "off",
+
     "lines-between-class-members": [
       "error",
       "always",
       { exceptAfterSingleLine: true }
     ],
 
+    "max-classes-per-file": "off",
     "no-restricted-syntax": "off",
+    "no-underscore-dangle": "off",
     "arrow-parens": ["error", "always"],
     semi: ["error", "never"],
+    "spaced-comment": "off",
     quotes: ["error", "double"]
   },
 

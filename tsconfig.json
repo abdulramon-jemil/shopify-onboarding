@@ -2,21 +2,22 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
-    "esModuleInterop": true,
+    "declaration": false,
+    "esModuleInterop": false,
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
-    "isolatedModules": true,
+    "isolatedModules": false,
     "jsx": "preserve",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
+    "outDir": "src/dist",
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES6"
+    "target": "ESNext"
   },
-  "include": ["src/**/*.js", "src/**/*.ts"],
+  "include": ["src/app.js", "globals.d.ts"],
   "exclude": ["node_modules"]
 }
