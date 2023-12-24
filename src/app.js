@@ -3380,10 +3380,3 @@ window.addEventListener("load", () => {
   setupSetupGuideAccordion(setupGuideState, checkboxes)
   setupSetupGuideCollapsible()
 })
-
-/**
- * TODOs
- * - Make site responsive as needed.
- * - Prevent animation of checkbox when collapsible is triggered.
- * - Switch certain CSS classes to BEM-like naming.
- */
