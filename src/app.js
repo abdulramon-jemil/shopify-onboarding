@@ -1661,19 +1661,6 @@ class DropdownMenu extends UIComponent {
       }
     })
 
-    const itemsControlledPointerLeaveHandler = controlEventByGroup({
-      members: [
-        {
-          elements: elements.items.map(({ __ref: { root } }) => root),
-          event: "pointerenter",
-          onDetection: { skipEventHandler: true }
-        }
-      ],
-      eventHandler: () => {
-        this._handleItemPointerLeaveNonItemPointerEnter()
-      }
-    })
-
     elements.items.forEach(({ __ref: { root: item } }) => {
       item.addEventListener("click", () => {
         this._handleItemClick()
@@ -1684,10 +1671,7 @@ class DropdownMenu extends UIComponent {
       })
 
       item.addEventListener("pointerleave", (event) => {
-        itemsControlledPointerLeaveHandler.call(null, {
-          ...event,
-          currentTarget: item
-        })
+        this._handleItemPointerLeave(event)
       })
     })
   }
@@ -1876,10 +1860,28 @@ class DropdownMenu extends UIComponent {
     attemptElementFocus(event.currentTarget)
   }
 
-  /** @protected */
-  _handleItemPointerLeaveNonItemPointerEnter() {
+  /**
+   * @protected
+   * @param {PointerEvent} event
+   */
+  _handleItemPointerLeave(event) {
     const { _state: state, _config: config } = this
     if (!state.isOpen) return
+
+    /**
+     * If the pointer entered another item, we shouldn't bother
+     * because that event will do the appropriate state changes
+     */
+    const shouldReturn = config.elements.items.some(
+      ({ __ref: { root: item } }) => {
+        const willHandleEnterEvent =
+          event.relatedTarget instanceof Node &&
+          item.contains(event.relatedTarget)
+        return willHandleEnterEvent
+      }
+    )
+
+    if (shouldReturn) return
 
     this._state = /** @type {const} */ ({ ...state, currentItemIndex: null })
     this.render()
