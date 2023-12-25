@@ -650,29 +650,44 @@ EVENT GROUP CONTROL UTILITIES
  * @typedef {{
  *   <
  *     TargetEvent extends HTMLElementEvent,
+ *     ExtraParams extends any[],
  *     Ev extends HTMLElementEventName
  *   >(config: {
- *     eventHandler: (event: TargetEvent, groupMap: EventGroupMap) => any,
+ *     eventHandler: (
+ *       event: TargetEvent,
+ *       groupMap: EventGroupMap,
+ *       ...extras: ExtraParams
+ *     ) => any,
  *     currentTarget?: HTMLElement,
  *     members?: [EventGroupMember<Ev>]
- *   }): (event: TargetEvent) => void,
+ *   }): (event: TargetEvent, ...extras: ExtraParams) => void,
  *   <
  *     TargetEvent extends HTMLElementEvent,
+ *     ExtraParams extends any[],
  *     Ev1 extends HTMLElementEventName,
  *     Ev2 extends HTMLElementEventName
  *   >(config: {
- *     eventHandler: (event: TargetEvent, groupMap: EventGroupMap) => any,
+ *     eventHandler: (
+ *       event: TargetEvent,
+ *       groupMap: EventGroupMap,
+ *       ...extras: ExtraParams
+ *     ) => any,
  *     currentTarget?: HTMLElement,
  *     members?: [EventGroupMember<Ev1>, EventGroupMember<Ev2>]
- *   }): (event: TargetEvent) => void,
+ *   }): (event: TargetEvent, ...extras: ExtraParams) => void,
  * }} CreateEventGroupcontrol
  */
 
 /**
  * @type {CreateEventGroupcontrol}
  * @template {HTMLElementEvent} TargetEvent
+ * @template {any[]} ExtraParams
  * @param {{
- *   eventHandler: (event: TargetEvent, groupMap: EventGroupMap) => any,
+ *   eventHandler: (
+ *     event: TargetEvent,
+ *     groupMap: EventGroupMap,
+ *     ...extras: ExtraParams
+ *   ) => any,
  *   currentTarget?: HTMLElement,
  *   members?: EventGroupMember[]
  * }} config
@@ -681,12 +696,12 @@ const controlEventByGroup = (config) => {
   /**
    * @typedef {{
    *   isDetected: false,
-   *   index: null,
-   *   event: null
+   *   index: null
    * } | {
    *   isDetected: true,
    *   index: number,
-   *   event: TargetEvent
+   *   event: TargetEvent,
+   *   extraParams: ExtraParams,
    * }} TargetEventInfo
    */
 
@@ -703,7 +718,7 @@ const controlEventByGroup = (config) => {
 
   const resetEventGroup = () => {
     eventGroup.isOngoing = false
-    eventGroup.targetEvent = { isDetected: false, index: null, event: null }
+    eventGroup.targetEvent = { isDetected: false, index: null }
     eventGroup.nextEventIndex = 0
     eventGroup.map.clear()
   }
@@ -754,7 +769,12 @@ const controlEventByGroup = (config) => {
       }
     }
 
-    config.eventHandler.call(null, targetEvent.event, eventGroup.map)
+    config.eventHandler.call(
+      null,
+      targetEvent.event,
+      eventGroup.map,
+      ...targetEvent.extraParams
+    )
     resetEventGroup()
   }
 
@@ -830,8 +850,8 @@ const controlEventByGroup = (config) => {
     })
   })
 
-  /** @type {(event: TargetEvent) => void} */
-  return (event) => {
+  /** @type {(event: TargetEvent, ...extras: ExtraParams) => void} */
+  return (event, ...extras) => {
     const element = config.currentTarget ?? event.currentTarget
     const eventType = /** @type {HTMLElementEventName} */ (event.type)
 
@@ -844,7 +864,13 @@ const controlEventByGroup = (config) => {
       element,
       captured: event.eventPhase === Event.CAPTURING_PHASE
     })
-    eventGroup.targetEvent = { isDetected: true, index, event }
+
+    eventGroup.targetEvent = {
+      isDetected: true,
+      index,
+      event,
+      extraParams: extras
+    }
   }
 }
 
@@ -1321,9 +1347,6 @@ class Popover extends UIComponent {
       controlEventByGroup({
         currentTarget: elements.content,
         members: [
-          // When trigger is clicked to make content lose focusout, do not
-          // handle the focus, as trigger will handle it in click event.
-          // This prevents one from reversing the operation done by the other.
           {
             elements: [elements.trigger],
             event: "mousedown",
@@ -1598,9 +1621,6 @@ class DropdownMenu extends UIComponent {
       controlEventByGroup({
         currentTarget: elements.content,
         members: [
-          // When trigger is clicked to make content lose focusout, do not
-          // handle the focus, as trigger will handle it in click event.
-          // This prevents one from reversing the operation done by the other.
           {
             elements: [elements.trigger],
             event: "mousedown",
@@ -1641,6 +1661,19 @@ class DropdownMenu extends UIComponent {
       }
     })
 
+    const itemsControlledPointerLeaveHandler = controlEventByGroup({
+      members: [
+        {
+          elements: elements.items.map(({ __ref: { root } }) => root),
+          event: "pointerenter",
+          onDetection: { skipEventHandler: true }
+        }
+      ],
+      eventHandler: () => {
+        this._handleItemPointerLeaveNonItemPointerEnter()
+      }
+    })
+
     elements.items.forEach(({ __ref: { root: item } }) => {
       item.addEventListener("click", () => {
         this._handleItemClick()
@@ -1650,22 +1683,12 @@ class DropdownMenu extends UIComponent {
         this._handleItemPointerEnter(event)
       })
 
-      item.addEventListener(
-        "pointerleave",
-        controlEventByGroup({
-          currentTarget: item,
-          members: [
-            {
-              elements: elements.items.map(({ __ref: { root } }) => root),
-              event: "pointerenter",
-              onDetection: { skipEventHandler: true }
-            }
-          ],
-          eventHandler: () => {
-            this._handleItemPointerLeaveNonItemPointerEnter()
-          }
+      item.addEventListener("pointerleave", (event) => {
+        itemsControlledPointerLeaveHandler.call(null, {
+          ...event,
+          currentTarget: item
         })
-      )
+      })
     })
   }
 
@@ -3388,8 +3411,3 @@ window.addEventListener("load", () => {
   setupSetupGuideAccordion(setupGuideState, checkboxes)
   setupSetupGuideCollapsible()
 })
-
-/**
- * TODOS
- * - Use event group control for pointer leave/ enter in menu items.
- */
