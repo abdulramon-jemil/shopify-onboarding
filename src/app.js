@@ -342,20 +342,15 @@ const bindRedefinedClickEvent = ({ element, handler, capture }) => {
 }
 
 /**
- * Focus an element as though it was tabbed to.
- *
- * @type {(element: HTMLElement, options?: FocusOptions | undefined) => boolean}
+ * @type {(
+ *   element: HTMLElement,
+ *   onlyIfTabbable: boolean,
+ *   options?: FocusOptions | undefined
+ * ) => boolean}
  */
-const attemptElementFocus = (element, options) => {
+const attemptFocus = (element, onlyIfTabbable, options) => {
   if (document.activeElement === element) return true
-
-  try {
-    const tabindex = forceGetElementIntegerAttribute(element, "tabindex", "any")
-    // Don't focus elements with negative tabindex
-    if (tabindex < 0) return false
-  } catch {
-    // Element has no integer tabindex so we'll try to focus
-  }
+  if (onlyIfTabbable && element.tabIndex < 0) return false
 
   try {
     element.focus(options)
@@ -365,6 +360,24 @@ const attemptElementFocus = (element, options) => {
 
   return document.activeElement === element
 }
+
+/**
+ * @type {(
+ *   element: HTMLElement,
+ *   options?: FocusOptions | undefined
+ * ) => boolean}
+ */
+const attemptElementFocus = (element, options) =>
+  attemptFocus(element, false, options)
+
+/**
+ * @type {(
+ *   element: HTMLElement,
+ *   options?: FocusOptions | undefined
+ * ) => boolean}
+ */
+const attemptTabbableFocus = (element, options) =>
+  attemptFocus(element, true, options)
 
 /**
  * Focus the next or previous focusable element within the parent that occurs
@@ -377,7 +390,7 @@ const attemptElementFocus = (element, options) => {
  *   focusOptions?: FocusOptions | undefined
  * }) => HTMLElement | null}
  */
-const focusFocusableAround = ({
+const focusTabbableAround = ({
   startingElement,
   parent,
   position,
@@ -401,7 +414,7 @@ const focusFocusableAround = ({
   for (const element of potentialFocusables) {
     // eslint-disable-next-line no-continue
     if (!isHTMLElement(element)) continue
-    const focused = attemptElementFocus(element, focusOptions)
+    const focused = attemptTabbableFocus(element, focusOptions)
     if (focused) return element
   }
 
@@ -415,8 +428,8 @@ const focusFocusableAround = ({
  *   focusOptions?: FocusOptions | undefined
  * ) => HTMLElement | null }
  */
-const focusPrevFocusableBefore = (element, withinParent, focusOptions) => {
-  const focused = focusFocusableAround({
+const focusPrevTabbableBefore = (element, withinParent, focusOptions) => {
+  const focused = focusTabbableAround({
     startingElement: element,
     parent: withinParent,
     position: "before",
@@ -432,8 +445,8 @@ const focusPrevFocusableBefore = (element, withinParent, focusOptions) => {
  *   focusOptions?: FocusOptions | undefined
  * ) => HTMLElement | null }
  */
-const focusNextFocusableAfter = (element, withinParent, focusOptions) => {
-  const focused = focusFocusableAround({
+const focusNextTabbableAfter = (element, withinParent, focusOptions) => {
+  const focused = focusTabbableAround({
     startingElement: element,
     parent: withinParent,
     position: "after",
@@ -449,14 +462,14 @@ const focusNextFocusableAfter = (element, withinParent, focusOptions) => {
  *   focusOptions?: FocusOptions | undefined
  * ) => HTMLElement | null}
  */
-const focusFirstOrLastFocusableIn = (element, which, focusOptions) => {
+const focusFirstOrLastTabbableIn = (element, which, focusOptions) => {
   const descendants = Array.from(element.querySelectorAll("*"))
   if (which === "last") descendants.reverse()
 
   for (const descendant of descendants) {
     // eslint-disable-next-line no-continue
     if (!isHTMLElement(descendant)) continue
-    const focused = attemptElementFocus(descendant, focusOptions)
+    const focused = attemptTabbableFocus(descendant, focusOptions)
     if (focused) return descendant
   }
 
@@ -469,8 +482,8 @@ const focusFirstOrLastFocusableIn = (element, which, focusOptions) => {
  *   focusOptions?: FocusOptions | undefined
  * ) => HTMLElement | null}
  */
-const focusFirstFocusableIn = (element, focusOptions) =>
-  focusFirstOrLastFocusableIn(element, "first", focusOptions)
+const focusFirstTabbableIn = (element, focusOptions) =>
+  focusFirstOrLastTabbableIn(element, "first", focusOptions)
 
 /**
  * @type {(
@@ -478,8 +491,8 @@ const focusFirstFocusableIn = (element, focusOptions) =>
  *   focusOptions?: FocusOptions | undefined
  * ) => HTMLElement | null}
  */
-const focusLastFocusableIn = (element, focusOptions) =>
-  focusFirstOrLastFocusableIn(element, "last", focusOptions)
+const focusLastTabbableIn = (element, focusOptions) =>
+  focusFirstOrLastTabbableIn(element, "last", focusOptions)
 
 /**
  * This normalizes a focus out handler by not calling the handler if the
@@ -1364,14 +1377,14 @@ class Popover extends UIComponent {
     assertIsHTMLElement(document.activeElement, "document active element")
 
     const focused = event.shiftKey
-      ? focusPrevFocusableBefore(document.activeElement, content)
-      : focusNextFocusableAfter(document.activeElement, content)
+      ? focusPrevTabbableBefore(document.activeElement, content)
+      : focusNextTabbableAfter(document.activeElement, content)
 
     /** Wrap focus within content */
     if (!focused) {
       const focusWrapped = event.shiftKey
-        ? focusLastFocusableIn(content)
-        : focusFirstFocusableIn(content)
+        ? focusLastTabbableIn(content)
+        : focusFirstTabbableIn(content)
 
       if (!focusWrapped) attemptElementFocus(content)
     }
@@ -1407,7 +1420,7 @@ class Popover extends UIComponent {
         document.activeElement.contains(config.elements.trigger) &&
         this._state.isOpen
       ) {
-        focusFirstFocusableIn(config.elements.content)
+        focusFirstTabbableIn(config.elements.content)
       }
     })
   }
@@ -3377,3 +3390,11 @@ window.addEventListener("load", () => {
   setupSetupGuideAccordion(setupGuideState, checkboxes)
   setupSetupGuideCollapsible()
 })
+
+/**
+ * TODOS
+ * - Rename HTMLElementEvent and HTMLElementEventObject
+ * - Modify attemptElementFocus to not check tabindex
+ * - Read tabindex js property in attemptElementFocus
+ * - Use event group control for pointer leave/ enter in menu items.
+ */
