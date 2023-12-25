@@ -325,7 +325,7 @@ const bindRedefinedClickEvent = ({ element, handler, capture }) => {
   element.addEventListener(
     "mousedown",
     (ev) => {
-      if (ev.button === 0) handler.call(null, ev)
+      if (isClickEvent(ev)) handler.call(null, ev)
     },
     { capture: captureEvent }
   )
@@ -598,12 +598,12 @@ EVENT GROUP CONTROL UTILITIES
 \*--------------------------------------------*/
 
 /**
- * @typedef {keyof HTMLElementEventMap} HTMLElementEvent
- * @typedef {HTMLElementEventMap[keyof HTMLElementEventMap]} HTMLElementEventObject
+ * @typedef {keyof HTMLElementEventMap} HTMLElementEventName
+ * @typedef {HTMLElementEventMap[keyof HTMLElementEventMap]} HTMLElementEvent
  */
 
 /**
- * @template {HTMLElementEvent} [Ev=HTMLElementEvent]
+ * @template {HTMLElementEventName} [Ev=HTMLElementEventName]
  * @typedef {{
  *   element: HTMLElement,
  *   event: Ev,
@@ -614,7 +614,7 @@ EVENT GROUP CONTROL UTILITIES
  */
 
 /**
- * @template {HTMLElementEvent} [Ev=HTMLElementEvent]
+ * @template {HTMLElementEventName} [Ev=HTMLElementEventName]
  * @typedef {{
  *   element: HTMLElement,
  *   event: HTMLElementEventMap[Ev],
@@ -624,12 +624,12 @@ EVENT GROUP CONTROL UTILITIES
  */
 
 /**
- * @template {HTMLElementEvent} [Ev=HTMLElementEvent]
+ * @template {HTMLElementEventName} [Ev=HTMLElementEventName]
  * @typedef {Map<Ev, EventDetail<Ev>[]>} EventGroupMap
  */
 
 /**
- * @template {HTMLElementEvent} [Ev=HTMLElementEvent]
+ * @template {HTMLElementEventName} [Ev=HTMLElementEventName]
  * @typedef {{
  *   elements: HTMLElement[],
  *   event: Ev,
@@ -648,15 +648,15 @@ EVENT GROUP CONTROL UTILITIES
  * function allows for controlling an event based on other associated events.
  *
  * @typedef {{
- *   <TargetEvent extends HTMLElementEventObject, Ev extends HTMLElementEvent>(config: {
+ *   <TargetEvent extends HTMLElementEvent, Ev extends HTMLElementEventName>(config: {
  *     eventHandler: (event: TargetEvent, groupMap: EventGroupMap) => any,
  *     currentTarget?: HTMLElement,
  *     members?: [EventGroupMember<Ev>]
  *   }): (event: TargetEvent) => void,
  *   <
- *     TargetEvent extends HTMLElementEventObject,
- *     Ev1 extends HTMLElementEvent,
- *     Ev2 extends HTMLElementEvent
+ *     TargetEvent extends HTMLElementEvent,
+ *     Ev1 extends HTMLElementEventName,
+ *     Ev2 extends HTMLElementEventName
  *   >(config: {
  *     eventHandler: (event: TargetEvent, groupMap: EventGroupMap) => any,
  *     currentTarget?: HTMLElement,
@@ -667,7 +667,7 @@ EVENT GROUP CONTROL UTILITIES
 
 /**
  * @type {CreateEventGroupcontrol}
- * @template {HTMLElementEventObject} TargetEvent
+ * @template {HTMLElementEvent} TargetEvent
  * @param {{
  *   eventHandler: (event: TargetEvent, groupMap: EventGroupMap) => any,
  *   currentTarget?: HTMLElement,
@@ -757,7 +757,7 @@ const controlEventByGroup = (config) => {
 
   /**
    * @type {(member: {
-   *   eventName: HTMLElementEvent,
+   *   eventName: HTMLElementEventName,
    *   event: Event,
    *   element: HTMLElement,
    *   captured: boolean
@@ -830,7 +830,7 @@ const controlEventByGroup = (config) => {
   /** @type {(event: TargetEvent) => void} */
   return (event) => {
     const element = config.currentTarget ?? event.currentTarget
-    const eventType = /** @type {HTMLElementEvent} */ (event.type)
+    const eventType = /** @type {HTMLElementEventName} */ (event.type)
 
     assertIsDefined(element, "current target of group-controlled event")
     assertIsHTMLElement(element, "current target of group-controlled event")
@@ -3393,8 +3393,5 @@ window.addEventListener("load", () => {
 
 /**
  * TODOS
- * - Rename HTMLElementEvent and HTMLElementEventObject
- * - Modify attemptElementFocus to not check tabindex
- * - Read tabindex js property in attemptElementFocus
  * - Use event group control for pointer leave/ enter in menu items.
  */
