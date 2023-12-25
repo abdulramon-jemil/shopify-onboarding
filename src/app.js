@@ -1395,11 +1395,12 @@ class Popover extends UIComponent {
    * @param {KeyboardEvent} event
    */
   _handleContentTabKeyPress(event) {
+    event.preventDefault()
+
     const { _config: config, _state: state } = this
     if (!state.isOpen) return
 
     const { content } = config.elements
-    event.preventDefault()
     assertIsHTMLElement(document.activeElement, "document active element")
 
     const focused = event.shiftKey
@@ -1647,13 +1648,13 @@ class DropdownMenu extends UIComponent {
       ) {
         const key =
           event.key === A11y.AriaKeys.ArrowUp ? "arrow-up" : "arrow-down"
-        this._handleContentArrowKeyPress(key)
+        this._handleContentArrowKeyPress(event, key)
       } else if (
         event.key === A11y.AriaKeys.Home ||
         event.key === A11y.AriaKeys.End
       ) {
         const key = event.key === A11y.AriaKeys.Home ? "home" : "end"
-        this._handleContentHomeEndKeyPress(key)
+        this._handleContentHomeEndKeyPress(event, key)
       }
       // When a letter is pressed while in menu
       else if (/[a-z]/.test(event.key)) {
@@ -1678,9 +1679,11 @@ class DropdownMenu extends UIComponent {
 
   /**
    * @protected
+   * @param {KeyboardEvent} event
    * @param {"arrow-up" | "arrow-down"} key
    */
-  _handleContentArrowKeyPress(key) {
+  _handleContentArrowKeyPress(event, key) {
+    event.preventDefault()
     const { _state: state, _config: config } = this
     if (!state.isOpen) return
 
@@ -1739,9 +1742,12 @@ class DropdownMenu extends UIComponent {
 
   /**
    * @protected
+   * @param {KeyboardEvent} event
    * @param {"home" | "end"} key
    */
-  _handleContentHomeEndKeyPress(key) {
+  _handleContentHomeEndKeyPress(event, key) {
+    event.preventDefault()
+
     const { _config: config, _state: state } = this
     if (!state.isOpen) return
 
@@ -2812,13 +2818,13 @@ class Accordion extends UIComponent {
         ) {
           const key =
             event.key === A11y.AriaKeys.ArrowUp ? "arrow-up" : "arrow-down"
-          this._handleItemTriggerArrowKeyPress(index, key)
+          this._handleItemTriggerArrowKeyPress(event, index, key)
         } else if (
           event.key === A11y.AriaKeys.Home ||
           event.key === A11y.AriaKeys.End
         ) {
           const key = event.key === A11y.AriaKeys.Home ? "home" : "end"
-          this._handleItemTriggerHomeEndKeyPress(index, key)
+          this._handleItemTriggerHomeEndKeyPress(event, index, key)
         }
       })
 
@@ -2862,10 +2868,13 @@ class Accordion extends UIComponent {
 
   /**
    * @protected
+   * @param {KeyboardEvent} event
    * @param {number} itemIndex
    * @param {"arrow-up" | "arrow-down"} key
    */
-  _handleItemTriggerArrowKeyPress(itemIndex, key) {
+  _handleItemTriggerArrowKeyPress(event, itemIndex, key) {
+    event.preventDefault()
+
     const { items } = this._config.elements
     /** @type {number} */
     let triggerIndexToFocus
@@ -2901,10 +2910,13 @@ class Accordion extends UIComponent {
 
   /**
    * @protected
+   * @param {KeyboardEvent} event
    * @param {number} itemIndex
    * @param {"home" | "end"} key
    */
-  _handleItemTriggerHomeEndKeyPress(itemIndex, key) {
+  _handleItemTriggerHomeEndKeyPress(event, itemIndex, key) {
+    event.preventDefault()
+
     const { items } = this._config.elements
     const triggerIndexToFocus = key === "home" ? 0 : items.length - 1
     const triggerToFocus = items[triggerIndexToFocus]?.__ref.trigger
@@ -3386,9 +3398,13 @@ const setupSetupGuideAccordion = (state, checkboxes) => {
 }
 
 const setupCSSRelatedFunctions = () => {
+  const JS_CONTROLLED_CSS_VARS = {
+    RootVerticalScrollbarWidth: "--root-vertical-scrollbar-width"
+  }
+
   new ResizeObserver(() => {
     document.documentElement.style.setProperty(
-      "--root-vertical-scrollbar-width",
+      JS_CONTROLLED_CSS_VARS.RootVerticalScrollbarWidth,
       `${window.innerWidth - document.documentElement.clientWidth}px`
     )
   }).observe(document.documentElement)
