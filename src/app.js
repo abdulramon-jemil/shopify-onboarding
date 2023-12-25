@@ -648,7 +648,10 @@ EVENT GROUP CONTROL UTILITIES
  * function allows for controlling an event based on other associated events.
  *
  * @typedef {{
- *   <TargetEvent extends HTMLElementEvent, Ev extends HTMLElementEventName>(config: {
+ *   <
+ *     TargetEvent extends HTMLElementEvent,
+ *     Ev extends HTMLElementEventName
+ *   >(config: {
  *     eventHandler: (event: TargetEvent, groupMap: EventGroupMap) => any,
  *     currentTarget?: HTMLElement,
  *     members?: [EventGroupMember<Ev>]
@@ -1647,9 +1650,22 @@ class DropdownMenu extends UIComponent {
         this._handleItemPointerEnter(event)
       })
 
-      item.addEventListener("pointerleave", (event) => {
-        this._handleItemPointerLeave(event)
-      })
+      item.addEventListener(
+        "pointerleave",
+        controlEventByGroup({
+          currentTarget: item,
+          members: [
+            {
+              elements: elements.items.map(({ __ref: { root } }) => root),
+              event: "pointerenter",
+              onDetection: { skipEventHandler: true }
+            }
+          ],
+          eventHandler: () => {
+            this._handleItemPointerLeaveNonItemPointerEnter()
+          }
+        })
+      )
     })
   }
 
@@ -1837,28 +1853,10 @@ class DropdownMenu extends UIComponent {
     attemptElementFocus(event.currentTarget)
   }
 
-  /**
-   * @protected
-   * @param {PointerEvent} event
-   */
-  _handleItemPointerLeave(event) {
+  /** @protected */
+  _handleItemPointerLeaveNonItemPointerEnter() {
     const { _state: state, _config: config } = this
     if (!state.isOpen) return
-
-    /**
-     * If the pointer entered another item, we shouldn't bother
-     * because that event will do the appropriate state changes
-     */
-    const shouldReturn = config.elements.items.some(
-      ({ __ref: { root: item } }) => {
-        const willHandleEnterEvent =
-          event.relatedTarget instanceof Node &&
-          item.contains(event.relatedTarget)
-        return willHandleEnterEvent
-      }
-    )
-
-    if (shouldReturn) return
 
     this._state = /** @type {const} */ ({ ...state, currentItemIndex: null })
     this.render()
