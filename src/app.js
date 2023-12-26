@@ -19,9 +19,6 @@
 HELPER FUNCTIONS
 \*--------------------------------------------*/
 
-/** @type {(value: unknown) => value is CharacterData} */
-const isCharacterData = (value) => value instanceof CharacterData
-
 /** @type {(value: unknown) => value is Element} */
 const isElement = (value) => value instanceof Element
 
@@ -32,12 +29,6 @@ const isHTMLElement = (value) => value instanceof HTMLElement
 const assertIsDefined = (value, desc) => {
   if (value === undefined || value === null)
     throw new Error(`Expected '${desc}' to be defined, got '${String(value)}'`)
-}
-
-/** @type {(value: unknown, desc: string) => asserts value is CharacterData} */
-const assertIsCharacterData = (value, desc) => {
-  if (!isCharacterData(value))
-    throw new Error(`Expected '${desc}' to be a CharacterData`)
 }
 
 /** @type {(value: unknown, desc: string) => asserts value is Element} */
@@ -78,6 +69,47 @@ const getElementString = (element) => {
   return outerHTML
     .substring(0, openingTagWithInnerHTML.length - innerHTML.trim().length)
     .trim()
+}
+
+/**
+ * Sets HTML attribute on element preventing resetting of already set values.
+ *
+ * @type {(
+ *   element: HTMLElement,
+ *   attributeName: string,
+ *   attributeValue: string | boolean
+ * ) => void}
+ */
+const setElementHTMLAttribute = (element, attributeName, attributeValue) => {
+  if (typeof attributeValue === "string") {
+    if (element.getAttribute(attributeName) === attributeValue) return
+    element.setAttribute(attributeName, attributeValue)
+  } else if (typeof attributeValue === "boolean") {
+    if (element.hasAttribute(attributeName) === attributeValue) return
+    if (attributeValue === true) element.setAttribute(attributeName, "")
+    else element.removeAttribute(attributeName)
+  }
+}
+
+/**
+ * Sets inline css property on element preventing resetting already set values
+ *
+ * @type {(
+ *   element: HTMLElement,
+ *   propertyName: string,
+ *   propertyValue: string | null
+ * ) => void}
+ */
+const setElementInlineCSSProperty = (element, propertyName, propertyValue) => {
+  const currentPropertyValue = element.style.getPropertyValue(propertyName)
+  if (typeof propertyValue === "string") {
+    if (currentPropertyValue === propertyValue) return
+    element.style.setProperty(propertyName, propertyValue)
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  } else if (propertyValue === null) {
+    if (currentPropertyValue === "") return
+    element.style.removeProperty(propertyName)
+  }
 }
 
 /** @type {(element: Element, attribute: string) => string} */
@@ -126,78 +158,6 @@ const forceGetElementIntegerAttribute = (element, attribute, type) => {
   }
 
   return attributeIntegerValue
-}
-
-/**
- * Create a `CSSStyleDeclaration` object from a CSS string
- *
- * @param {string} cssText
- */
-const createCSSStyleDeclaration = (cssText) => {
-  const div = document.createElement("div")
-  div.setAttribute("style", cssText)
-  return div.style
-}
-
-/**
- * Returns whether two `CSSStyleDeclaration` objects are the same
- *
- * @param {CSSStyleDeclaration} first
- * @param {CSSStyleDeclaration} second
- */
-const isSameCSSStyleDeclaration = (first, second) => {
-  const firstCSSString = Array.from(first)
-    .sort()
-    .map((property) => `${property}: ${first.getPropertyValue(property)};`)
-    .join(" ")
-
-  const secondCSSString = Array.from(second)
-    .sort()
-    .map((property) => `${property}: ${second.getPropertyValue(property)};`)
-    .join(" ")
-
-  return firstCSSString === secondCSSString
-}
-
-/**
- * Returns whether a set of mutation records (usually passed from a mutation
- * observer) is a rewrite of the records e.g rewritten HTML attributes.
- *
- * @param {MutationRecord[]} records
- * @param {string} observedElementName
- */
-const mutationIsRewrite = (records, observedElementName) => {
-  /** @param {MutationRecord} record */
-  const recordIsRewrite = (record) => {
-    const { attributeName, oldValue, target } = record
-
-    if (record.type === "attributes") {
-      assertIsElement(target, `${observedElementName} mutation record target`)
-      assertIsDefined(attributeName, `${observedElementName} attribute name`)
-
-      if (attributeName === "style") {
-        return isSameCSSStyleDeclaration(
-          createCSSStyleDeclaration(target.getAttribute("style") ?? ""),
-          createCSSStyleDeclaration(oldValue ?? "")
-        )
-      }
-
-      return target.getAttribute(attributeName) === oldValue
-    }
-
-    if (record.type === "characterData") {
-      assertIsCharacterData(
-        target,
-        `${observedElementName} item mutation record target`
-      )
-
-      return target.data === oldValue
-    }
-
-    return false
-  }
-
-  return records.every((record) => recordIsRewrite(record))
 }
 
 const A11y = /** @type {const} */ ({
@@ -380,8 +340,8 @@ const attemptTabbableFocus = (element, options) =>
   attemptFocus(element, true, options)
 
 /**
- * Focus the next or previous focusable element within the parent that occurs
- * after the element in the DOM order.
+ * Focus the next or previous focusable element that occurs after the given
+ * element, within the parent, in the DOM order.
  *
  * @type {(params: {
  *   startingElement: HTMLElement,
@@ -692,7 +652,7 @@ EVENT GROUP CONTROL UTILITIES
  *   members?: EventGroupMember[]
  * }} config
  */
-const controlEventByGroup = (config) => {
+const createGroupControlledEventHandler = (config) => {
   /**
    * @typedef {{
    *   isDetected: false,
@@ -938,7 +898,7 @@ const isUIElementStaticPropertySet = (propertySet) => {
 }
 
 /**
- * @typedef {{ __ref: Record<string, HTMLElement>, [key: string]: unknown }} ElementSetArrayItem
+ * @typedef {{ __refs: Record<string, HTMLElement>, [key: string]: unknown }} ElementSetArrayItem
  * @typedef {Record<string, HTMLElement | ElementSetArrayItem[]>} ElementSet
  * @typedef {{elements: ElementSet}} UIComponentConfig
  * @typedef {Record<string, unknown>} UIComponentState
@@ -1089,37 +1049,28 @@ class UIComponent {
     const deferredHidingProperties = []
 
     htmlAttributes?.forEach((attribute) => {
-      if (typeof attribute.value === "string") {
-        element.setAttribute(attribute.name, attribute.value)
+      if (attribute.name === "hidden" && attribute.value === true) {
+        deferredHidingProperties.push("HTML_HIDDEN")
+        return
       }
 
-      if (typeof attribute.value === "boolean") {
-        if (attribute.name === "hidden" && attribute.value === true) {
-          deferredHidingProperties.push("HTML_HIDDEN")
-          return
-        }
-
-        if (attribute.value === true) element.setAttribute(attribute.name, "")
-        else element.removeAttribute(attribute.name)
-      }
+      setElementHTMLAttribute(element, attribute.name, attribute.value)
     })
 
     cssProperties?.forEach((property) => {
-      if (typeof property.value === "string") {
-        if (property.name === "display" && property.value === "none") {
-          deferredHidingProperties.push("CSS_DISPLAY_NONE")
-        } else {
-          element.style.setProperty(property.name, property.value)
-        }
-      } else {
-        element.style.removeProperty(property.name)
+      if (property.name === "display" && property.value === "none") {
+        deferredHidingProperties.push("CSS_DISPLAY_NONE")
+        return
       }
+
+      setElementInlineCSSProperty(element, property.name, property.value)
     })
 
     const setDeferredHidingProperties = () => {
       deferredHidingProperties.forEach((property) => {
         if (property === "HTML_HIDDEN") element.setAttribute("hidden", "")
-        if (property === "CSS_DISPLAY_NONE") {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        else if (property === "CSS_DISPLAY_NONE") {
           element.style.setProperty("display", "none")
         }
       })
@@ -1344,7 +1295,7 @@ class Popover extends UIComponent {
 
     elements.content.addEventListener(
       "focusout",
-      controlEventByGroup({
+      createGroupControlledEventHandler({
         currentTarget: elements.content,
         members: [
           {
@@ -1395,11 +1346,10 @@ class Popover extends UIComponent {
    * @param {KeyboardEvent} event
    */
   _handleContentTabKeyPress(event) {
-    event.preventDefault()
-
     const { _config: config, _state: state } = this
     if (!state.isOpen) return
 
+    event.preventDefault()
     const { content } = config.elements
     assertIsHTMLElement(document.activeElement, "document active element")
 
@@ -1440,7 +1390,7 @@ class Popover extends UIComponent {
     this.render()
 
     setTimeout(() => {
-      // Necessary since bound click uses mousedown and keydown and those fire
+      // Necessary since redefined click uses mousedown and keydown and those fire
       // very early so setting focus synchronously may not work
       if (
         document.activeElement &&
@@ -1552,7 +1502,7 @@ DROPDOWN MENU
  * @template {{elements: {
  *   trigger: HTMLElement,
  *   content: HTMLElement,
- *   items: { __ref: { root: HTMLElement } }[]
+ *   items: { __refs: { root: HTMLElement } }[]
  * }}} Config
  *
  * @extends {UIComponent<Config, DropdownMenuState>}
@@ -1587,7 +1537,7 @@ class DropdownMenu extends UIComponent {
     UIComponent.assertValidElementProperties(elements.content, sp.content)
     UIComponent.assertValidElementProperties(elements.content, mp.content)
 
-    elements.items.forEach(({ __ref: item }, index) => {
+    elements.items.forEach(({ __refs: item }, index) => {
       const staticProps = sp.items[index]
       const managedProps = mp.items[index]
       if (!staticProps || !managedProps) return
@@ -1619,7 +1569,7 @@ class DropdownMenu extends UIComponent {
 
     elements.content.addEventListener(
       "focusout",
-      controlEventByGroup({
+      createGroupControlledEventHandler({
         currentTarget: elements.content,
         members: [
           {
@@ -1662,7 +1612,7 @@ class DropdownMenu extends UIComponent {
       }
     })
 
-    elements.items.forEach(({ __ref: { root: item } }) => {
+    elements.items.forEach(({ __refs: { root: item } }) => {
       item.addEventListener("click", () => {
         this._handleItemClick()
       })
@@ -1683,10 +1633,10 @@ class DropdownMenu extends UIComponent {
    * @param {"arrow-up" | "arrow-down"} key
    */
   _handleContentArrowKeyPress(event, key) {
-    event.preventDefault()
     const { _state: state, _config: config } = this
     if (!state.isOpen) return
 
+    event.preventDefault()
     const { currentItemIndex } = state
     const { elements } = config
 
@@ -1720,7 +1670,7 @@ class DropdownMenu extends UIComponent {
     }
     this.render()
 
-    const itemToFocus = elements.items[indexToFocus]?.__ref.root
+    const itemToFocus = elements.items[indexToFocus]?.__refs.root
     assertIsDefined(itemToFocus, `menu item at index: ${indexToFocus}`)
     attemptElementFocus(itemToFocus)
   }
@@ -1746,16 +1696,15 @@ class DropdownMenu extends UIComponent {
    * @param {"home" | "end"} key
    */
   _handleContentHomeEndKeyPress(event, key) {
-    event.preventDefault()
-
     const { _config: config, _state: state } = this
     if (!state.isOpen) return
 
+    event.preventDefault()
     const indexToFocus = key === "home" ? 0 : config.elements.items.length - 1
     this._state.currentItemIndex = indexToFocus
     this.render()
 
-    const itemToFocus = config.elements.items[indexToFocus]?.__ref.root
+    const itemToFocus = config.elements.items[indexToFocus]?.__refs.root
     assertIsDefined(itemToFocus, `menu item at index: ${indexToFocus}`)
     attemptElementFocus(itemToFocus)
   }
@@ -1769,7 +1718,7 @@ class DropdownMenu extends UIComponent {
     if (!state.isOpen) return
 
     const indexToFocus = config.elements.items.findIndex(
-      ({ __ref: { root: item } }) => {
+      ({ __refs: { root: item } }) => {
         const itemTextStartsWithLetter = item.innerText
           .toLowerCase()
           .startsWith(letter.toLowerCase())
@@ -1781,7 +1730,7 @@ class DropdownMenu extends UIComponent {
     this._state.currentItemIndex = indexToFocus
     this.render()
 
-    const itemToFocus = config.elements.items[indexToFocus]?.__ref.root
+    const itemToFocus = config.elements.items[indexToFocus]?.__refs.root
     assertIsDefined(itemToFocus, `menu item at index: ${indexToFocus}`)
     attemptElementFocus(itemToFocus)
   }
@@ -1806,11 +1755,7 @@ class DropdownMenu extends UIComponent {
     /**
      * Focus trigger is focused element is only focusable programmatically (e.g. body).
      */
-    if (
-      !isHTMLElement(nextFocus) ||
-      nextFocus.getAttribute("tabindex") === "-1" ||
-      nextFocus.tabIndex === -1
-    ) {
+    if (!isHTMLElement(nextFocus) || nextFocus.tabIndex < 0) {
       attemptElementFocus(config.elements.trigger)
     }
   }
@@ -1849,7 +1794,7 @@ class DropdownMenu extends UIComponent {
     if (!state.isOpen) return
 
     const itemIndex = config.elements.items.findIndex(
-      ({ __ref: { root: item } }) => event.currentTarget === item
+      ({ __refs: { root: item } }) => event.currentTarget === item
     )
 
     this._state = /** @type {const} */ ({
@@ -1879,7 +1824,7 @@ class DropdownMenu extends UIComponent {
      * because that event will do the appropriate state changes
      */
     const shouldReturn = config.elements.items.some(
-      ({ __ref: { root: item } }) => {
+      ({ __refs: { root: item } }) => {
         const willHandleEnterEvent =
           event.relatedTarget instanceof Node &&
           item.contains(event.relatedTarget)
@@ -1921,11 +1866,11 @@ class DropdownMenu extends UIComponent {
 
     this.render()
 
-    const defaultItem = config.elements.items[DEFAULT_ITEM_INDEX]?.__ref.root
+    const defaultItem = config.elements.items[DEFAULT_ITEM_INDEX]?.__refs.root
     assertIsDefined(defaultItem, "first menu item")
 
     setTimeout(() => {
-      // Necessary since bound click uses mousedown and keydown and those fire
+      // Necessary since redefined click uses mousedown and keydown and those fire
       // very early so setting focus synchronously may not work
       if (
         document.activeElement &&
@@ -2021,7 +1966,7 @@ class DropdownMenu extends UIComponent {
     UIComponent.setElementProperties(elements.trigger, props.trigger)
     UIComponent.setElementProperties(elements.content, props.content)
 
-    elements.items.forEach(({ __ref: item }, index) => {
+    elements.items.forEach(({ __refs: item }, index) => {
       const itemProps = props.items[index]
       if (!itemProps) return
       UIComponent.setElementProperties(item.root, itemProps.root)
@@ -2419,20 +2364,6 @@ class Collapsible extends UIComponent {
       this._handleTriggerClick()
     })
 
-    // Observe item content for changes to update CSS vars accordingly
-    const contentAreaMutationObserver = new MutationObserver((records) => {
-      this._handleContentAreaMutation(records)
-    })
-
-    contentAreaMutationObserver.observe(elements.contentArea, {
-      attributes: true,
-      attributeOldValue: true,
-      characterData: true,
-      characterDataOldValue: true,
-      childList: true,
-      subtree: true
-    })
-
     const contentAreaResizeObserver = new ResizeObserver(() => {
       this._handleContentAreaResize()
     })
@@ -2440,15 +2371,6 @@ class Collapsible extends UIComponent {
     contentAreaResizeObserver.observe(elements.contentArea, {
       box: "border-box"
     })
-  }
-
-  /**
-   * @protected
-   * @param {MutationRecord[]} records
-   */
-  _handleContentAreaMutation(records) {
-    if (mutationIsRewrite(records, "collapsible content area")) return
-    this.render()
   }
 
   /** @protected */
@@ -2744,7 +2666,7 @@ ACCORDION
  *   elements: {
  *     items: {
  *       name: string,
- *       __ref: {
+ *       __refs: {
  *         root: HTMLElement,
  *         header: HTMLHeadingElement,
  *         trigger: HTMLButtonElement,
@@ -2787,7 +2709,7 @@ class Accordion extends UIComponent {
     const staticProps = this.getStaticElementPropertySets()
     const managedProps = this.getManagedElementPropertySets()
 
-    elements.items.forEach(({ __ref: item }, index) => {
+    elements.items.forEach(({ __refs: item }, index) => {
       const sp = staticProps.items[index]
       const mp = managedProps.items[index]
       if (!sp || !mp) return
@@ -2806,7 +2728,7 @@ class Accordion extends UIComponent {
   /** @protected */
   _doEventHandlerSetup() {
     const { items } = this._config.elements
-    items.forEach(({ __ref: item }, index) => {
+    items.forEach(({ __refs: item }, index) => {
       item.trigger.addEventListener("click", () => {
         this._handleItemTriggerClick(index)
       })
@@ -2828,37 +2750,12 @@ class Accordion extends UIComponent {
         }
       })
 
-      // Observe item content for changes to update CSS vars accordingly
-      const contentAreaMutationObserver = new MutationObserver((records) => {
-        this._handleItemContentAreaMutation(index, records)
-      })
-
-      contentAreaMutationObserver.observe(item.contentArea, {
-        attributes: true,
-        attributeOldValue: true,
-        characterData: true,
-        characterDataOldValue: true,
-        childList: true,
-        subtree: true
-      })
-
       const contentAreaResizeObserver = new ResizeObserver(() => {
         this._handleItemContentAreaResize()
       })
 
       contentAreaResizeObserver.observe(item.contentArea, { box: "border-box" })
     })
-  }
-
-  /**
-   * @protected
-   * @param {number} itemIndex
-   * @param {MutationRecord[]} records
-   */
-  _handleItemContentAreaMutation(itemIndex, records) {
-    // Prevent infinite callback firing
-    if (mutationIsRewrite(records, "accordion item content area")) return
-    this.render()
   }
 
   /** @protected */
@@ -2888,7 +2785,7 @@ class Accordion extends UIComponent {
       else triggerIndexToFocus = 0
     }
 
-    const triggerToFocus = items[triggerIndexToFocus]?.__ref.trigger
+    const triggerToFocus = items[triggerIndexToFocus]?.__refs.trigger
     if (!isHTMLElement(triggerToFocus)) return
     attemptElementFocus(triggerToFocus)
   }
@@ -2919,7 +2816,7 @@ class Accordion extends UIComponent {
 
     const { items } = this._config.elements
     const triggerIndexToFocus = key === "home" ? 0 : items.length - 1
-    const triggerToFocus = items[triggerIndexToFocus]?.__ref.trigger
+    const triggerToFocus = items[triggerIndexToFocus]?.__refs.trigger
     if (!isHTMLElement(triggerToFocus)) return
     attemptElementFocus(triggerToFocus)
   }
@@ -2933,7 +2830,7 @@ class Accordion extends UIComponent {
 
     /** @satisfies {UIComponentManagedElementPropertySets} */
     const properties = {
-      items: elements.items.map(({ __ref: item }, index) => {
+      items: elements.items.map(({ __refs: item }, index) => {
         const dataState = currentItemIndex === index ? "open" : "closed"
         const ariaExpanded = currentItemIndex === index ? "true" : "false"
         const contentDisplay = currentItemIndex === index ? null : "none"
@@ -3008,7 +2905,7 @@ class Accordion extends UIComponent {
 
     /** @satisfies {UIComponentStaticElementPropertySets} */
     const properties = {
-      items: elements.items.map(({ __ref: item }) => ({
+      items: elements.items.map(({ __refs: item }) => ({
         trigger: {
           variableHTMLAttributes: [{ name: "id", type: "non-empty-string" }],
           htmlAttributes: [
@@ -3038,7 +2935,7 @@ class Accordion extends UIComponent {
     const { elements } = this._config
     const props = this.getManagedElementPropertySets()
 
-    elements.items.forEach(({ __ref: item }, index) => {
+    elements.items.forEach(({ __refs: item }, index) => {
       const itemProps = props.items[index]
       if (!itemProps) return
 
@@ -3199,7 +3096,7 @@ const setupStoreButtonDropdownMenu = () => {
         selectors.itemRoots,
         HTMLAnchorElement,
         root
-      ).map((element) => ({ __ref: { root: element } }))
+      ).map((element) => ({ __refs: { root: element } }))
     }
   })
 }
@@ -3260,8 +3157,8 @@ const setupSetupGuideItemCheckboxes = (state) => {
     indicators: "[data-js-setup-guide-item-checkbox-indicator]"
   }
 
-  const roots = selectAllElements(selectors.roots, HTMLButtonElement)
-  const checkboxes = roots.map((root, index) => {
+  const checkboxRoots = selectAllElements(selectors.roots, HTMLButtonElement)
+  const checkboxes = checkboxRoots.map((root, index) => {
     const checkbox = new Checkbox({
       onCheckedChange: (checked) => {
         const checkedBoxes = checkboxes.filter((box) => box.isChecked())
@@ -3278,6 +3175,32 @@ const setupSetupGuideItemCheckboxes = (state) => {
     })
 
     return checkbox
+  })
+
+  checkboxRoots.forEach((checkboxRoot, index) => {
+    checkboxRoot.addEventListener("keydown", (event) => {
+      /** @type {number | null} */
+      let indexToFocus = null
+      const { AriaKeys } = A11y
+
+      if (event.key === AriaKeys.ArrowUp) {
+        indexToFocus = index === 0 ? checkboxRoots.length - 1 : index - 1
+      } else if (event.key === AriaKeys.ArrowDown) {
+        indexToFocus = index === checkboxRoots.length - 1 ? 0 : index + 1
+      } else if (event.key === AriaKeys.Home) {
+        indexToFocus = 0
+      } else if (event.key === AriaKeys.End) {
+        indexToFocus = checkboxRoots.length - 1
+      }
+
+      if (indexToFocus === null) return
+
+      event.preventDefault()
+      const checkboxRootToFocus = checkboxRoots.at(indexToFocus)
+
+      assertIsDefined(checkboxRootToFocus, `checkbox at index: ${indexToFocus}`)
+      attemptElementFocus(checkboxRootToFocus)
+    })
   })
 
   return checkboxes
@@ -3336,7 +3259,7 @@ const setupSetupGuideAccordion = (state, checkboxes) => {
 
         return {
           name: itemName,
-          __ref: {
+          __refs: {
             root: itemRoot,
             header: selectElement(
               selectors.itemHeaders,
@@ -3402,12 +3325,14 @@ const setupCSSRelatedFunctions = () => {
     RootVerticalScrollbarWidth: "--root-vertical-scrollbar-width"
   }
 
-  new ResizeObserver(() => {
+  const documentSizeObserver = new ResizeObserver(() => {
     document.documentElement.style.setProperty(
       JS_CONTROLLED_CSS_VARS.RootVerticalScrollbarWidth,
       `${window.innerWidth - document.documentElement.clientWidth}px`
     )
-  }).observe(document.documentElement)
+  })
+
+  documentSizeObserver.observe(document.documentElement)
 }
 
 window.addEventListener("load", () => {

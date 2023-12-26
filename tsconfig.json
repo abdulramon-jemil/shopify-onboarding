@@ -13,7 +13,6 @@
     "module": "ESNext",
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
-    "outDir": "src/dist",
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext"
