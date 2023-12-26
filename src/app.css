@@ -233,9 +233,11 @@ html {
 }
 
 body {
+  background-color: var(--color-plain-background);
+
   font-size: 14px;
   line-height: inherit;
-  background-color: var(--color-plain-background);
+  padding-bottom: var(--spacing-5);
 }
 
 h1,
@@ -284,7 +286,7 @@ img {
 }
 
 [hidden] {
-  display: none !important;
+  display: none;
 }
 
 /*
@@ -1017,7 +1019,7 @@ img {
   background-color: #ffffff;
 
   padding: var(--spacing-2);
-  margin: var(--spacing-4) auto var(--spacing-12);
+  margin: var(--spacing-4) auto 0;
   max-width: 800px;
 }
 
