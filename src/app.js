@@ -3290,9 +3290,6 @@ const setupSetupGuideAccordion = (state, checkboxes) => {
   state.addChangeCallback(({ markedCheckbox }) => {
     if (markedCheckbox === null) return
     const openItem = accordion.getOpenItem()
-    // const openItemIndex = itemNames.findIndex((name) => name === openItem)
-    // const openItemCheckbox = checkboxes[openItemIndex]
-    // if (openItemCheckbox && !openItemCheckbox.isChecked()) return
 
     const uncheckedIndexAfterMarked = checkboxes.findIndex(
       (checkbox, index) => index > markedCheckbox && !checkbox.isChecked()
