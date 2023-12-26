@@ -816,6 +816,10 @@ img {
   gap: var(--spacing-1);
 }
 
+.quick-menu-content:focus-visible {
+  outline: none;
+}
+
 .quick-menu-item:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--color-state-focused);
