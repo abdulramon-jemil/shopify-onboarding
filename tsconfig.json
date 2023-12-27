@@ -17,6 +17,6 @@
     "strict": true,
     "target": "ESNext"
   },
-  "include": ["src/app.js", "globals.d.ts"],
+  "include": ["docs/app.js", "globals.d.ts"],
   "exclude": ["node_modules"]
 }

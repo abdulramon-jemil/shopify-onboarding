@@ -2,15 +2,15 @@
   "name": "shopify-onboarding",
   "version": "1.0.0",
   "description": "A simple repreduction of the Shopify onboarding dashboard",
-  "main": "src/app.js",
+  "main": "docs/app.js",
   "scripts": {
-    "dev": "cd src && live-server --port=8000",
+    "dev": "cd docs && live-server --port=8000",
     "prettier:check": "prettier --check .",
     "prettier:write": "prettier --write .",
     "lint:check": "eslint ./ --ext .js,.ts",
     "lint:fix": "eslint ./ --fix --ext .js,.ts",
     "prepare": "husky install",
-    "start": "cd src && live-server --port=8000",
+    "start": "cd docs && live-server --port=8000",
     "type:check": "tsc -p tsconfig.json --noEmit"
   },
   "keywords": [],
