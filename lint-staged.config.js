@@ -13,5 +13,5 @@ module.exports = {
       ]
     },
 
-  "*.{json,md}": "prettier --check"
+  "*.{html,json,md}": "prettier --check"
 }
