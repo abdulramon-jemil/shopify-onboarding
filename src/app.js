@@ -3080,10 +3080,10 @@ const setupNotificationPopover = () => {
 
 const setupStoreButtonDropdownMenu = () => {
   const selectors = {
-    root: "[data-js-store-button-menu-root]",
-    trigger: "[data-js-store-button-menu-trigger]",
-    content: "[data-js-store-button-menu-content]",
-    itemRoots: "[data-js-store-button-menu-item]"
+    root: "[data-js-dropdown-root]",
+    trigger: "[data-js-dropdown-trigger]",
+    content: "[data-js-dropdown-content]",
+    itemRoots: "[data-js-dropdown-item]"
   }
 
   const root = selectElement(selectors.root, HTMLDivElement)
@@ -3231,12 +3231,12 @@ const setupSetupGuideCollapsible = () => {
  */
 const setupSetupGuideAccordion = (state, checkboxes) => {
   const selectors = {
-    root: "[data-js-setup-guide-accordion-root]",
-    itemRoots: "[data-js-setup-guide-accordion-item]",
-    itemHeaders: "[data-js-setup-guide-accordion-item-header]",
-    itemTriggers: "[data-js-setup-guide-accordion-item-trigger]",
-    itemContents: "[data-js-setup-guide-accordion-item-content]",
-    itemContentAreas: "[data-js-setup-guide-accordion-item-content-area]"
+    root: "[data-js-accordion-root]",
+    itemRoots: "[data-js-accordion-item]",
+    itemHeaders: "[data-js-accordion-item-header]",
+    itemTriggers: "[data-js-accordion-item-trigger]",
+    itemContents: "[data-js-accordion-item-content]",
+    itemContentAreas: "[data-js-accordion-item-content-area]"
   }
 
   const root = selectElement(selectors.root, HTMLDivElement)

@@ -23,7 +23,7 @@
     <script src="./app.js"></script>
   </head>
   <body>
-    <header class="header o-container">
+    <header class="o-container header">
       <!-- 
         -
         -
@@ -105,14 +105,14 @@
       <div
         class="o-center-vertical access-panel"
         data-js-notification-popover-root
-        data-js-store-button-menu-root
+        data-js-dropdown-root
       >
         <button
           aria-controls="notification-popover"
           aria-expanded="false"
           aria-haspopup="dialog"
           aria-label="Manage notifications"
-          class="c-tag o-center notification-trigger"
+          class="c-tag o-center notification-popover-trigger"
           data-js-notification-popover-trigger
           data-controller="default"
           data-state="closed"
@@ -127,8 +127,8 @@
         #--------------------------------------------------->
 
         <section
-          aria-describedby="notification-popover-description"
-          aria-labelledby="notification-popover-header"
+          aria-describedby="notification-description"
+          aria-labelledby="notification-header"
           id="notification-popover"
           class="o-popper notification-popover"
           data-controller="default"
@@ -138,20 +138,17 @@
           style="display: none"
           tabindex="-1"
         >
-          <div class="notification-popover-header">
-            <header
-              id="notification-popover-header"
-              class="u-text-14-semi-bold"
-            >
+          <div class="notification-header">
+            <header id="notification-header" class="u-text-14-semi-bold">
               Alerts
             </header>
-            <div class="notification-popover-controls">
-              <button class="notification-popover-button" type="button">
+            <div class="notification-control-area">
+              <button class="notification-control-button" type="button">
                 <!-- prettier-ignore -->
                 <svg class="u-square-20" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" > <path d="M3 6C3 5.58579 3.33579 5.25 3.75 5.25H16.25C16.6642 5.25 17 5.58579 17 6C17 6.41421 16.6642 6.75 16.25 6.75H3.75C3.33579 6.75 3 6.41421 3 6Z" fill="currentColor" /> <path d="M6.75 14C6.75 13.5858 7.08579 13.25 7.5 13.25H12.5C12.9142 13.25 13.25 13.5858 13.25 14C13.25 14.4142 12.9142 14.75 12.5 14.75H7.5C7.08579 14.75 6.75 14.4142 6.75 14Z" fill="currentColor" /> <path d="M5.5 9.25C5.08579 9.25 4.75 9.58579 4.75 10C4.75 10.4142 5.08579 10.75 5.5 10.75H14.5C14.9142 10.75 15.25 10.4142 15.25 10C15.25 9.58579 14.9142 9.25 14.5 9.25H5.5Z" fill="currentColor" /> </svg>
               </button>
 
-              <button class="notification-popover-button" type="button">
+              <button class="notification-control-button" type="button">
                 <!-- prettier-ignore -->
                 <svg class="u-square-20" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" > <path d="M13.2803 9.03033C13.5732 8.73744 13.5732 8.26256 13.2803 7.96967C12.9874 7.67678 12.5126 7.67678 12.2197 7.96967L9.25 10.9393L8.03033 9.71967C7.73744 9.42678 7.26256 9.42678 6.96967 9.71967C6.67678 10.0126 6.67678 10.4874 6.96967 10.7803L8.71967 12.5303C9.01256 12.8232 9.48744 12.8232 9.78033 12.5303L13.2803 9.03033Z" fill="currentColor" /> <path fill-rule="evenodd" clip-rule="evenodd" d="M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10ZM15.5 10C15.5 13.0376 13.0376 15.5 10 15.5C6.96243 15.5 4.5 13.0376 4.5 10C4.5 6.96243 6.96243 4.5 10 4.5C13.0376 4.5 15.5 6.96243 15.5 10Z" fill="currentColor" /> </svg>
               </button>
@@ -159,7 +156,7 @@
           </div>
 
           <p
-            id="notification-popover-description"
+            id="notification-description"
             class="u-text-13-semi-bold notification-popover-body"
           >
             Alerts about your store and account will show here
@@ -167,21 +164,21 @@
         </section>
 
         <button
-          aria-controls="store-button-menu-content"
+          aria-controls="dropdown-content"
           aria-expanded="false"
           aria-haspopup="true"
           aria-label="Explore store options"
-          class="c-tag o-center-vertical quick-menu-trigger"
-          data-js-store-button-menu-trigger
+          class="c-tag o-center-vertical dropdown-trigger"
+          data-js-dropdown-trigger
           data-controller="default"
           data-state="closed"
           type="button"
         >
-          <span class="u-text-12-medium quick-menu-trigger__store-name"
+          <span class="u-text-12-medium dropdown-trigger__store-name"
             >Davii Collections</span
           >
           <span
-            class="o-center u-text-12-medium quick-menu-trigger__store-initials"
+            class="o-center u-text-12-medium dropdown-trigger__store-initials"
             >DC</span
           >
         </button>
@@ -191,40 +188,38 @@
         #--------------------------------------------------->
         <div
           aria-orientation="vertical"
-          class="o-popper quick-menu-content"
-          data-js-store-button-menu-content
+          class="o-popper dropdown-content"
+          data-js-dropdown-content
           data-controller="default"
           data-state="closed"
-          id="store-button-menu-content"
+          id="dropdown-content"
           role="menu"
           style="display: none"
           tabindex="-1"
         >
           <a
-            class="u-text-13-semi-bold quick-menu-item quick-menu-item--store-button"
+            class="u-text-13-semi-bold dropdown-item dropdown-item--store-button"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
           >
-            <span
-              class="o-center quick-menu-item--store-button__store-initials"
-            >
+            <span class="o-center dropdown-item--store-button__store-initials">
               DC
             </span>
             <span>Davii Collections</span>
 
-            <span class="quick-menu-item--store-button__selected-icon">
+            <span class="dropdown-item--store-button__selected-icon">
               <!-- prettier-ignore -->
               <svg width="12" height="9" viewBox="0 0 12 9" fill="none" xmlns="http://www.w3.org/2000/svg" > <path d="M11.3332 1L3.99984 8.33333L0.666504 5" stroke="currentColor" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round" /> </svg>
             </span>
           </a>
 
           <a
-            class="quick-menu-item quick-menu-item--link quick-menu-item--all-store-button"
+            class="dropdown-item dropdown-item--link dropdown-item--all-stores-button"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
@@ -235,12 +230,12 @@
             <span>All Stores</span>
           </a>
 
-          <hr aria-orientation="horizontal" class="quick-menu-item-separator" />
+          <hr aria-orientation="horizontal" class="dropdown-item-separator" />
 
           <a
-            class="quick-menu-item quick-menu-item--link"
+            class="dropdown-item dropdown-item--link"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
@@ -248,9 +243,9 @@
             Help Center
           </a>
           <a
-            class="quick-menu-item quick-menu-item--link"
+            class="dropdown-item dropdown-item--link"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
@@ -259,9 +254,9 @@
           </a>
 
           <a
-            class="quick-menu-item quick-menu-item--link"
+            class="dropdown-item dropdown-item--link"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
@@ -270,9 +265,9 @@
           </a>
 
           <a
-            class="quick-menu-item quick-menu-item--link"
+            class="dropdown-item dropdown-item--link"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
@@ -281,9 +276,9 @@
           </a>
 
           <a
-            class="quick-menu-item quick-menu-item--link"
+            class="dropdown-item dropdown-item--link"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
@@ -291,21 +286,21 @@
             Keyboard Shortcuts
           </a>
 
-          <hr aria-orientation="horizontal" class="quick-menu-item-separator" />
+          <hr aria-orientation="horizontal" class="dropdown-item-separator" />
 
-          <div class="quick-menu-user-details">
-            <p class="u-text-13-medium quick-menu-user-details__name">
+          <div class="dropdown-user-details">
+            <p class="u-text-13-medium dropdown-user-details__name">
               David Micheal
             </p>
-            <p class="u-text-12-regular quick-menu-user-details__email">
+            <p class="u-text-12-regular dropdown-user-details__email">
               davidmicheal@gmail.com
             </p>
           </div>
 
           <a
-            class="quick-menu-item quick-menu-item--link"
+            class="dropdown-item dropdown-item--link"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
@@ -314,9 +309,9 @@
           </a>
 
           <a
-            class="quick-menu-item quick-menu-item--link"
+            class="dropdown-item dropdown-item--link"
             data-highlighted="false"
-            data-js-store-button-menu-item
+            data-js-dropdown-item
             href="https://admin.shopify.com"
             role="menuitem"
             tabindex="-1"
@@ -460,7 +455,7 @@
         >
           <div
             class="setup-guide-collapsible-content-area"
-            data-js-setup-guide-accordion-root
+            data-js-accordion-root
             data-js-setup-guide-collapsible-content-area
           >
             <!-- 
@@ -480,16 +475,16 @@
             ACCORDION ITEM 1 => CUSTOMIZE ONLINE STORE
             #--------------------------------------------------->
             <div
-              class="setup-guide-accordion-item"
-              data-js-setup-guide-accordion-item
+              class="accordion-item"
+              data-js-accordion-item
               data-controller="default"
               data-state="open"
             >
-              <div class="setup-guide-accordion-item__main">
-                <div class="setup-guide-accordion-item-top">
+              <div class="accordion-item__main-content">
+                <div class="accordion-item-top-section">
                   <button
                     aria-checked="false"
-                    aria-labelledby="setup-guide-accordion-item-customize-store-trigger"
+                    aria-labelledby="accordion-item-trigger--customize-store"
                     class="accordion-item-checkbox"
                     data-state="unchecked"
                     data-js-setup-guide-item-checkbox-root
@@ -503,19 +498,19 @@
                   </button>
 
                   <h2
-                    class="o-center-vertical setup-guide-accordion-item-header"
-                    data-js-setup-guide-accordion-item-header
+                    class="o-center-vertical accordion-item-header"
+                    data-js-accordion-item-header
                     data-controller="default"
                     data-state="open"
                   >
                     <button
-                      aria-controls="setup-guide-accordion-item-customize-store-content"
+                      aria-controls="accordion-item-content--customize-store"
                       aria-expanded="true"
-                      class="setup-guide-accordion-item-trigger"
-                      data-js-setup-guide-accordion-item-trigger
+                      class="accordion-item-trigger"
+                      data-js-accordion-item-trigger
                       data-controller="default"
                       data-state="open"
-                      id="setup-guide-accordion-item-customize-store-trigger"
+                      id="accordion-item-trigger--customize-store"
                     >
                       Customize your online store
                     </button>
@@ -523,23 +518,21 @@
                 </div>
 
                 <div
-                  aria-labelledby="setup-guide-accordion-item-customize-store-trigger"
-                  class="setup-guide-accordion-item-content"
-                  data-js-setup-guide-accordion-item-content
+                  aria-labelledby="accordion-item-trigger--customize-store"
+                  class="accordion-item-content"
+                  data-js-accordion-item-content
                   data-controller="default"
                   data-state="open"
-                  id="setup-guide-accordion-item-customize-store-content"
+                  id="accordion-item-content--customize-store"
                 >
                   <div
-                    class="setup-guide-accordion-item-content-area"
-                    data-js-setup-guide-accordion-item-content-area
+                    class="accordion-item-content-area"
+                    data-js-accordion-item-content-area
                   >
-                    <p class="u-text-13-medium setup-guide-accordion-item-text">
+                    <p class="u-text-13-medium accordion-item-text">
                       Choose a theme and add your logo, colors, and images to
                       reflect your brand.
-                      <a
-                        class="u-text-14-medium setup-guide-accordion-item-text__link"
-                      >
+                      <a class="u-text-14-medium accordion-item-text__link">
                         Learn more
                       </a>
                     </p>
@@ -550,7 +543,7 @@
 
               <!-- Leave image alt as empty since it's decorative -->
               <img
-                class="setup-guide-accordion-item__illustration"
+                class="accordion-item__illustration"
                 src="./__images/customise-store.png"
                 alt=""
               />
@@ -574,16 +567,16 @@
           #--------------------------------------------------->
 
             <div
-              class="setup-guide-accordion-item"
-              data-js-setup-guide-accordion-item
+              class="accordion-item"
+              data-js-accordion-item
               data-controller="default"
               data-state="closed"
             >
-              <div class="setup-guide-accordion-item__main">
-                <div class="setup-guide-accordion-item-top">
+              <div class="accordion-item__main-content">
+                <div class="accordion-item-top-section">
                   <button
                     aria-checked="false"
-                    aria-labelledby="setup-guide-accordion-item-add-product-trigger"
+                    aria-labelledby="accordion-item-trigger--add-product"
                     class="accordion-item-checkbox"
                     data-state="unchecked"
                     data-js-setup-guide-item-checkbox-root
@@ -597,19 +590,19 @@
                   </button>
 
                   <h2
-                    class="o-center-vertical setup-guide-accordion-item-header"
-                    data-js-setup-guide-accordion-item-header
+                    class="o-center-vertical accordion-item-header"
+                    data-js-accordion-item-header
                     data-controller="default"
                     data-state="closed"
                   >
                     <button
-                      aria-controls="setup-guide-accordion-item-add-product-content"
+                      aria-controls="accordion-item-content--add-product"
                       aria-expanded="false"
-                      class="setup-guide-accordion-item-trigger"
-                      data-js-setup-guide-accordion-item-trigger
+                      class="accordion-item-trigger"
+                      data-js-accordion-item-trigger
                       data-controller="default"
                       data-state="closed"
-                      id="setup-guide-accordion-item-add-product-trigger"
+                      id="accordion-item-trigger--add-product"
                     >
                       Add your first product
                     </button>
@@ -617,32 +610,28 @@
                 </div>
 
                 <div
-                  aria-labelledby="setup-guide-accordion-item-add-product-trigger"
-                  class="setup-guide-accordion-item-content"
-                  data-js-setup-guide-accordion-item-content
+                  aria-labelledby="accordion-item-trigger--add-product"
+                  class="accordion-item-content"
+                  data-js-accordion-item-content
                   data-controller="default"
                   data-state="closed"
-                  id="setup-guide-accordion-item-add-product-content"
+                  id="accordion-item-content--add-product"
                   style="display: none"
                 >
                   <div
-                    class="setup-guide-accordion-item-content-area"
-                    data-js-setup-guide-accordion-item-content-area
+                    class="accordion-item-content-area"
+                    data-js-accordion-item-content-area
                   >
                     <!--  -->
-                    <p class="u-text-13-medium setup-guide-accordion-item-text">
+                    <p class="u-text-13-medium accordion-item-text">
                       Write a description, add photos, and set pricing for the
                       products you plan to sell.
-                      <a
-                        class="u-text-14-medium setup-guide-accordion-item-text__link"
-                      >
+                      <a class="u-text-14-medium accordion-item-text__link">
                         Learn more
                       </a>
                     </p>
 
-                    <div
-                      class="o-center-vertical setup-guide-accordion-item-button-group"
-                    >
+                    <div class="o-center-vertical accordion-item-button-group">
                       <button class="c-btn c-btn--solid">Add product</button>
                       <button class="c-btn c-btn--ghost">Import product</button>
                     </div>
@@ -652,7 +641,7 @@
 
               <!-- Leave image alt as empty since it's decorative -->
               <img
-                class="setup-guide-accordion-item__illustration"
+                class="accordion-item__illustration"
                 src="./__images/product.png"
                 alt=""
               />
@@ -676,16 +665,16 @@
             #--------------------------------------------------->
 
             <div
-              class="setup-guide-accordion-item"
-              data-js-setup-guide-accordion-item
+              class="accordion-item"
+              data-js-accordion-item
               data-controller="default"
               data-state="closed"
             >
-              <div class="setup-guide-accordion-item__main">
-                <div class="setup-guide-accordion-item-top">
+              <div class="accordion-item__main-content">
+                <div class="accordion-item-top-section">
                   <button
                     aria-checked="false"
-                    aria-labelledby="setup-guide-accordion-item-add-domain-trigger"
+                    aria-labelledby="accordion-item-trigger--add-domain"
                     class="accordion-item-checkbox"
                     data-state="unchecked"
                     data-js-setup-guide-item-checkbox-root
@@ -699,19 +688,19 @@
                   </button>
 
                   <h2
-                    class="o-center-vertical setup-guide-accordion-item-header"
-                    data-js-setup-guide-accordion-item-header
+                    class="o-center-vertical accordion-item-header"
+                    data-js-accordion-item-header
                     data-controller="default"
                     data-state="closed"
                   >
                     <button
-                      aria-controls="setup-guide-accordion-item-add-domain-content"
+                      aria-controls="accordion-item-content--add-domain"
                       aria-expanded="false"
-                      class="setup-guide-accordion-item-trigger"
-                      data-js-setup-guide-accordion-item-trigger
+                      class="accordion-item-trigger"
+                      data-js-accordion-item-trigger
                       data-controller="default"
                       data-state="closed"
-                      id="setup-guide-accordion-item-add-domain-trigger"
+                      id="accordion-item-trigger--add-domain"
                     >
                       Add a custom domain
                     </button>
@@ -719,26 +708,24 @@
                 </div>
 
                 <div
-                  aria-labelledby="setup-guide-accordion-item-add-domain-trigger"
-                  class="setup-guide-accordion-item-content"
-                  data-js-setup-guide-accordion-item-content
+                  aria-labelledby="accordion-item-trigger--add-domain"
+                  class="accordion-item-content"
+                  data-js-accordion-item-content
                   data-controller="default"
                   data-state="closed"
-                  id="setup-guide-accordion-item-add-domain-content"
+                  id="accordion-item-content--add-domain"
                   style="display: none"
                 >
                   <div
-                    class="setup-guide-accordion-item-content-area"
-                    data-js-setup-guide-accordion-item-content-area
+                    class="accordion-item-content-area"
+                    data-js-accordion-item-content-area
                   >
                     <!--  -->
-                    <p class="u-text-13-medium setup-guide-accordion-item-text">
+                    <p class="u-text-13-medium accordion-item-text">
                       Your current domain is 222219.myshopify.com but you can
                       add a custom domain to help customers find your online
                       store.
-                      <a
-                        class="u-text-14-medium setup-guide-accordion-item-text__link"
-                      >
+                      <a class="u-text-14-medium accordion-item-text__link">
                         Learn more
                       </a>
                     </p>
@@ -750,7 +737,7 @@
 
               <!-- Leave image alt as empty since it's decorative -->
               <img
-                class="setup-guide-accordion-item__illustration"
+                class="accordion-item__illustration"
                 src="./__images/website.png"
                 alt=""
               />
@@ -774,16 +761,16 @@
             #--------------------------------------------------->
 
             <div
-              class="setup-guide-accordion-item"
-              data-js-setup-guide-accordion-item
+              class="accordion-item"
+              data-js-accordion-item
               data-controller="default"
               data-state="closed"
             >
-              <div class="setup-guide-accordion-item__main">
-                <div class="setup-guide-accordion-item-top">
+              <div class="accordion-item__main-content">
+                <div class="accordion-item-top-section">
                   <button
                     aria-checked="false"
-                    aria-labelledby="setup-guide-accordion-item-name-store-trigger"
+                    aria-labelledby="accordion-item-trigger--name-store"
                     class="accordion-item-checkbox"
                     data-state="unchecked"
                     data-js-setup-guide-item-checkbox-root
@@ -797,19 +784,19 @@
                   </button>
 
                   <h2
-                    class="o-center-vertical setup-guide-accordion-item-header"
-                    data-js-setup-guide-accordion-item-header
+                    class="o-center-vertical accordion-item-header"
+                    data-js-accordion-item-header
                     data-controller="default"
                     data-state="closed"
                   >
                     <button
-                      aria-controls="setup-guide-accordion-item-name-store-content"
+                      aria-controls="accordion-item-content--name-store"
                       aria-expanded="false"
-                      class="setup-guide-accordion-item-trigger"
-                      data-js-setup-guide-accordion-item-trigger
+                      class="accordion-item-trigger"
+                      data-js-accordion-item-trigger
                       data-controller="default"
                       data-state="closed"
-                      id="setup-guide-accordion-item-name-store-trigger"
+                      id="accordion-item-trigger--name-store"
                     >
                       Name your store
                     </button>
@@ -817,26 +804,24 @@
                 </div>
 
                 <div
-                  aria-labelledby="setup-guide-accordion-item-name-store-trigger"
-                  class="setup-guide-accordion-item-content"
-                  data-js-setup-guide-accordion-item-content
+                  aria-labelledby="accordion-item-trigger--name-store"
+                  class="accordion-item-content"
+                  data-js-accordion-item-content
                   data-controller="default"
                   data-state="closed"
-                  id="setup-guide-accordion-item-name-store-content"
+                  id="accordion-item-content--name-store"
                   style="display: none"
                 >
                   <div
-                    class="setup-guide-accordion-item-content-area"
-                    data-js-setup-guide-accordion-item-content-area
+                    class="accordion-item-content-area"
+                    data-js-accordion-item-content-area
                   >
                     <!--  -->
-                    <p class="u-text-13-medium setup-guide-accordion-item-text">
+                    <p class="u-text-13-medium accordion-item-text">
                       Your temporary store name is currently Davii collections.
                       The store name appears in your admin and your online
                       store.
-                      <a
-                        class="u-text-14-medium setup-guide-accordion-item-text__link"
-                      >
+                      <a class="u-text-14-medium accordion-item-text__link">
                         Learn more
                       </a>
                     </p>
@@ -848,7 +833,7 @@
 
               <!-- Leave image alt as empty since it's decorative -->
               <img
-                class="setup-guide-accordion-item__illustration"
+                class="accordion-item__illustration"
                 src="./__images/name-store.png"
                 alt=""
               />
@@ -872,16 +857,16 @@
             #--------------------------------------------------->
 
             <div
-              class="setup-guide-accordion-item"
-              data-js-setup-guide-accordion-item
+              class="accordion-item"
+              data-js-accordion-item
               data-controller="default"
               data-state="closed"
             >
-              <div class="setup-guide-accordion-item__main">
-                <div class="setup-guide-accordion-item-top">
+              <div class="accordion-item__main-content">
+                <div class="accordion-item-top-section">
                   <button
                     aria-checked="false"
-                    aria-labelledby="setup-guide-accordion-item-setup-payment-trigger"
+                    aria-labelledby="accordion-item-trigger--setup-payment"
                     class="accordion-item-checkbox"
                     data-state="unchecked"
                     data-js-setup-guide-item-checkbox-root
@@ -895,19 +880,19 @@
                   </button>
 
                   <h2
-                    class="o-center-vertical setup-guide-accordion-item-header"
-                    data-js-setup-guide-accordion-item-header
+                    class="o-center-vertical accordion-item-header"
+                    data-js-accordion-item-header
                     data-controller="default"
                     data-state="closed"
                   >
                     <button
-                      aria-controls="setup-guide-accordion-item-setup-payment-content"
+                      aria-controls="accordion-item-content--setup-payment"
                       aria-expanded="false"
-                      class="setup-guide-accordion-item-trigger"
-                      data-js-setup-guide-accordion-item-trigger
+                      class="accordion-item-trigger"
+                      data-js-accordion-item-trigger
                       data-controller="default"
                       data-state="closed"
-                      id="setup-guide-accordion-item-setup-payment-trigger"
+                      id="accordion-item-trigger--setup-payment"
                     >
                       Set up a payment provider
                     </button>
@@ -915,26 +900,24 @@
                 </div>
 
                 <div
-                  aria-labelledby="setup-guide-accordion-item-setup-payment-trigger"
-                  class="setup-guide-accordion-item-content"
-                  data-js-setup-guide-accordion-item-content
+                  aria-labelledby="accordion-item-trigger--setup-payment"
+                  class="accordion-item-content"
+                  data-js-accordion-item-content
                   data-controller="default"
                   data-state="closed"
-                  id="setup-guide-accordion-item-setup-payment-content"
+                  id="accordion-item-content--setup-payment"
                   style="display: none"
                 >
                   <div
-                    class="setup-guide-accordion-item-content-area"
-                    data-js-setup-guide-accordion-item-content-area
+                    class="accordion-item-content-area"
+                    data-js-accordion-item-content-area
                   >
                     <!--  -->
-                    <p class="u-text-13-medium setup-guide-accordion-item-text">
+                    <p class="u-text-13-medium accordion-item-text">
                       Choose a payment provider to start accepting payments.
                       You’ll need to create an account with the payment provider
                       and set it up with your Shopify store.
-                      <a
-                        class="u-text-14-medium setup-guide-accordion-item-text__link"
-                      >
+                      <a class="u-text-14-medium accordion-item-text__link">
                         Learn more
                       </a>
                     </p>
@@ -946,7 +929,7 @@
 
               <!-- Leave image alt as empty since it's decorative -->
               <img
-                class="setup-guide-accordion-item__illustration"
+                class="accordion-item__illustration"
                 src="./__images/payment.png"
                 alt=""
               />

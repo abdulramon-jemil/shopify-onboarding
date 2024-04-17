@@ -697,7 +697,7 @@ img {
   gap: var(--spacing-2);
 }
 
-.notification-trigger {
+.notification-popover-trigger {
   aspect-ratio: 1;
   padding: 0;
 }
@@ -710,7 +710,7 @@ img {
   );
 }
 
-.notification-popover-header {
+.notification-header {
   margin-bottom: var(--spacing-4);
 
   display: flex;
@@ -725,13 +725,13 @@ img {
   color: var(--color-font-dark);
 }
 
-.notification-popover-controls {
+.notification-control-area {
   color: var(--color-font-mid);
   display: flex;
   gap: var(--spacing-4);
 }
 
-.notification-popover-button {
+.notification-control-button {
   background-color: transparent;
 
   padding: var(--spacing-0-5);
@@ -745,11 +745,11 @@ img {
   transition-duration: 120ms;
 }
 
-.notification-popover-button:hover {
+.notification-control-button:hover {
   background-color: var(--color-state-hover);
 }
 
-.notification-popover-button:focus-visible {
+.notification-control-button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 1px var(--color-state-focused);
 }
@@ -773,29 +773,29 @@ img {
   # HEADER QUICK MENU STYLES
 \*-------------------------------------------------*/
 
-.quick-menu-trigger {
+.dropdown-trigger {
   padding: var(--spacing-0-5) var(--spacing-0-5) var(--spacing-0-5)
     var(--spacing-2);
   gap: var(--spacing-2);
 }
 
 @media screen and (max-width: 640px) {
-  .quick-menu-trigger {
+  .dropdown-trigger {
     padding: 0;
   }
 }
 
-.quick-menu-trigger__store-name {
+.dropdown-trigger__store-name {
   min-width: max-content;
 }
 
 @media screen and (max-width: 640px) {
-  .quick-menu-trigger__store-name {
+  .dropdown-trigger__store-name {
     display: none;
   }
 }
 
-.quick-menu-trigger__store-initials {
+.dropdown-trigger__store-initials {
   background-color: #36fba1;
   color: rgb(0 0 0 / 40%);
 
@@ -804,7 +804,7 @@ img {
   height: 100%;
 }
 
-.quick-menu-content {
+.dropdown-content {
   padding: var(--spacing-1-5) 0;
   width: min(
     calc(100vw - var(--root-vertical-scrollbar-width) - var(--spacing-8)),
@@ -816,16 +816,16 @@ img {
   gap: var(--spacing-1);
 }
 
-.quick-menu-content:focus-visible {
+.dropdown-content:focus-visible {
   outline: none;
 }
 
-.quick-menu-item:focus-visible {
+.dropdown-item:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--color-state-focused);
 }
 
-.quick-menu-item--store-button {
+.dropdown-item--store-button {
   display: flex;
   align-items: center;
 
@@ -836,7 +836,7 @@ img {
   margin: 0 var(--spacing-1-5) 0 var(--spacing-1-5);
 }
 
-.quick-menu-item--store-button__store-initials {
+.dropdown-item--store-button__store-initials {
   border-radius: var(--spacing-1-5);
   margin-right: var(--spacing-2);
 
@@ -850,16 +850,16 @@ img {
   width: var(--spacing-7);
 }
 
-.quick-menu-item--store-button__selected-icon {
+.dropdown-item--store-button__selected-icon {
   color: var(--color-font-dark);
   margin-left: auto;
 }
 
-.quick-menu-item--all-store-button {
+.dropdown-item--all-stores-button {
   gap: 8px;
 }
 
-.quick-menu-item--link {
+.dropdown-item--link {
   display: flex;
   align-items: center;
 
@@ -874,30 +874,30 @@ img {
   border-radius: var(--spacing-2);
 }
 
-.quick-menu-item--link:active {
+.dropdown-item--link:active {
   background-color: var(--color-state-pressed);
 }
 
-.quick-menu-item--link:hover {
+.dropdown-item--link:hover {
   background-color: var(--color-state-hover);
 }
 
-.quick-menu-item-separator {
+.dropdown-item-separator {
   border-color: var(--color-stroke-s100);
   border-width: 0.75px 0 0;
   border-top-style: solid;
 }
 
-.quick-menu-user-details {
+.dropdown-user-details {
   padding: var(--spacing-2);
   margin: 0 var(--spacing-1-5);
 }
 
-.quick-menu-user-details__name {
+.dropdown-user-details__name {
   color: var(--color-font-dark);
 }
 
-.quick-menu-user-details__email {
+.dropdown-user-details__email {
   color: var(--color-grey-100);
 }
 
@@ -1213,7 +1213,7 @@ img {
   # SETUP GUIDE ACCORDION STYLES
 \*-------------------------------------------------*/
 
-.setup-guide-accordion-item {
+.accordion-item {
   border-radius: var(--spacing-2-5);
 
   position: relative;
@@ -1224,17 +1224,17 @@ img {
   transition-duration: 120ms;
 }
 
-.setup-guide-accordion-item[data-state="open"] {
+.accordion-item[data-state="open"] {
   background-color: #f3f3f3;
   padding: var(--spacing-2) var(--spacing-2) var(--spacing-3);
 }
 
-.setup-guide-accordion-item[data-state="closed"] {
+.accordion-item[data-state="closed"] {
   background-color: transparent;
   padding: var(--spacing-2);
 }
 
-.setup-guide-accordion-item__main {
+.accordion-item__main-content {
   --image-width: 157px;
   --gap: var(--spacing-24);
 
@@ -1243,12 +1243,12 @@ img {
 }
 
 @media screen and (max-width: 640px) {
-  .setup-guide-accordion-item__main {
+  .accordion-item__main-content {
     margin-right: 0;
   }
 }
 
-.setup-guide-accordion-item-top {
+.accordion-item-top-section {
   display: flex;
   gap: var(--spacing-2);
 
@@ -1356,25 +1356,25 @@ img {
   # OTHER SETUP GUIDE ACCORDION ITEM STYLES
 \*-------------------------------------------------*/
 
-.setup-guide-accordion-item-header {
+.accordion-item-header {
   flex: 1 1 max-content;
 }
 
-.setup-guide-accordion-item-header[data-state="open"] {
+.accordion-item-header[data-state="open"] {
   margin-right: var(--item-main-content-mr);
 }
 
 @media screen and (max-width: 640px) {
-  .setup-guide-accordion-item-header[data-state="open"] {
+  .accordion-item-header[data-state="open"] {
     margin-right: 0;
   }
 }
 
-.setup-guide-accordion-item-header[data-state="closed"] {
+.accordion-item-header[data-state="closed"] {
   margin-right: 0;
 }
 
-.setup-guide-accordion-item-trigger {
+.accordion-item-trigger {
   background: none;
   color: var(--color-font-dark);
 
@@ -1384,11 +1384,11 @@ img {
   width: 100%;
 }
 
-.setup-guide-accordion-item-trigger:focus-visible {
+.accordion-item-trigger:focus-visible {
   outline: 2px solid var(--color-state-focused);
 }
 
-.setup-guide-accordion-item-trigger[data-state="open"] {
+.accordion-item-trigger[data-state="open"] {
   cursor: default;
 
   font-size: var(--text-13-semi-bold-font-size);
@@ -1396,7 +1396,7 @@ img {
   line-height: var(--text-13-semi-bold-line-height);
 }
 
-.setup-guide-accordion-item-trigger[data-state="closed"] {
+.accordion-item-trigger[data-state="closed"] {
   cursor: pointer;
 
   font-size: var(--text-13-medium-font-size);
@@ -1404,7 +1404,7 @@ img {
   line-height: var(--text-13-medium-line-height);
 }
 
-.setup-guide-accordion-item-content {
+.accordion-item-content {
   margin-right: var(--item-main-content-mr);
 
   animation-duration: 120ms;
@@ -1413,7 +1413,7 @@ img {
 }
 
 @media screen and (max-width: 640px) {
-  .setup-guide-accordion-item-content {
+  .accordion-item-content {
     margin-right: 0;
   }
 }
@@ -1436,22 +1436,18 @@ img {
   }
 }
 
-.setup-guide-accordion-item-content[data-state="open"]:not(
-    [data-controller="default"]
-  ) {
+.accordion-item-content[data-state="open"]:not([data-controller="default"]) {
   overflow: clip;
   overflow-clip-margin: var(--spacing-1-5);
   animation-name: accordion-open;
 }
 
-.setup-guide-accordion-item-content[data-state="closed"]:not(
-    [data-controller="default"]
-  ) {
+.accordion-item-content[data-state="closed"]:not([data-controller="default"]) {
   overflow: hidden;
   animation-name: accordion-close;
 }
 
-.setup-guide-accordion-item-content-area {
+.accordion-item-content-area {
   display: flex;
   align-items: flex-start;
   flex-direction: column;
@@ -1462,21 +1458,21 @@ img {
   padding-left: calc(var(--spacing-6) + var(--spacing-2));
 }
 
-.setup-guide-accordion-item-text {
+.accordion-item-text {
   color: var(--var-font-mid-2);
 }
 
-.setup-guide-accordion-item-text__link {
+.accordion-item-text__link {
   display: inline-block;
   cursor: pointer;
   color: var(--color-state-focused);
 }
 
-.setup-guide-accordion-item-button-group {
+.accordion-item-button-group {
   gap: var(--spacing-4);
 }
 
-.setup-guide-accordion-item__illustration {
+.accordion-item__illustration {
   width: 157px;
   height: 120px;
 
@@ -1504,14 +1500,13 @@ img {
   );
 }
 
-.setup-guide-accordion-item[data-state="closed"]
-  .setup-guide-accordion-item__illustration {
+.accordion-item[data-state="closed"] .accordion-item__illustration {
   opacity: 0;
   pointer-events: none;
 }
 
 @media screen and (max-width: 640px) {
-  .setup-guide-accordion-item__illustration {
+  .accordion-item__illustration {
     display: none;
   }
 }

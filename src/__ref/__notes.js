@@ -82,7 +82,7 @@ const acc = new Accordion({
 const html = String.raw
 html`
   <div
-    data-ui-store-button-menu-trigger
+    data-ui-dropdown-trigger
     data-ui-notification-popover-trigger
     class="js-ui-menu-trigger"
   ></div>
@@ -90,7 +90,7 @@ html`
 
 const NOTIFICATION_POPOVER_CONFIG = {
   TRIGGER: {
-    selector: "data-ui-store-button-menu-trigger",
+    selector: "data-ui-dropdown-trigger",
     type: HTMLButtonElement
   }
 }
