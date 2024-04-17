@@ -1085,7 +1085,7 @@ class UIComponent {
   }
 
   /** @type {(extender: new (...args: any[]) => UIComponent ) => void} */
-  static validateExtender(extender) {
+  static assertComponentValidity(extender) {
     const constructor = /** @type {typeof UIComponent} */ (extender)
 
     // The type below causes an error because `keyof` only works with public properties
@@ -1470,7 +1470,7 @@ class Popover extends UIComponent {
   }
 }
 
-UIComponent.validateExtender(Popover)
+UIComponent.assertComponentValidity(Popover)
 
 /**
  *
@@ -1974,7 +1974,7 @@ class DropdownMenu extends UIComponent {
   }
 }
 
-UIComponent.validateExtender(DropdownMenu)
+UIComponent.assertComponentValidity(DropdownMenu)
 
 /**
  *
@@ -2091,7 +2091,7 @@ class Hideable extends UIComponent {
   }
 }
 
-UIComponent.validateExtender(Hideable)
+UIComponent.assertComponentValidity(Hideable)
 
 /**
  *
@@ -2286,7 +2286,7 @@ class Progress extends UIComponent {
   }
 }
 
-UIComponent.validateExtender(Progress)
+UIComponent.assertComponentValidity(Progress)
 
 /**
  *
@@ -2485,7 +2485,7 @@ class Collapsible extends UIComponent {
   }
 }
 
-UIComponent.validateExtender(Collapsible)
+UIComponent.assertComponentValidity(Collapsible)
 
 /**
  *
@@ -2629,7 +2629,7 @@ class Checkbox extends UIComponent {
   }
 }
 
-UIComponent.validateExtender(Checkbox)
+UIComponent.assertComponentValidity(Checkbox)
 
 /**
  *
@@ -2973,7 +2973,7 @@ class Accordion extends UIComponent {
 }
 
 /** Make sure constructor has necessary properties */
-UIComponent.validateExtender(Accordion)
+UIComponent.assertComponentValidity(Accordion)
 
 /**
  *
