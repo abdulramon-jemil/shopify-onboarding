@@ -861,15 +861,15 @@ BASE COMPONENT
  * - A null value means the property should not exist.
  *
  * @typedef {{
- *   cssProperties?: { name: string, value: string | null }[]
- *   htmlAttributes?: { name: string, value: string | boolean }[]
+ *   cssProperties?: Record<string, string | null>
+ *   htmlAttributes?: Record<string, string | boolean>
  * }} UIElementManagedPropertySet
  *
  * @typedef {UIElementManagedPropertySet & {
- *   variableHTMLAttributes?: {
- *     name: string,
- *     type: "non-empty-string" | "integer" | "positive-integer" | "non-negative-integer"
- *   }[]
+ *   variableHTMLAttributes?: Record<
+ *     string,
+ *     "non-empty-string" | "integer" | "positive-integer" | "non-negative-integer"
+ *   >
  * }} UIElementStaticPropertySet
  *
  * @typedef {Record<
@@ -947,76 +947,90 @@ class UIComponent {
   static assertValidElementProperties(element, propertySet) {
     const { cssProperties, htmlAttributes } = propertySet
 
-    cssProperties?.forEach((property) => {
-      const elementPropertyValue = element.style.getPropertyValue(property.name)
-      if (
-        typeof property.value === "string" &&
-        elementPropertyValue !== property.value
-      ) {
-        throw new Error(
-          `Expected element: '${getElementString(
-            element
-          )}' to have inline CSS property '${property.name}: ${property.value}'`
-        )
-      } else if (property.value === null && elementPropertyValue !== "") {
-        // Property value should be the empty string to signify that inline property
-        // doesn't exist
-        throw new Error(
-          `Expected element: '${getElementString(
-            element
-          )}' not to have inline CSS property '${property.name}'`
-        )
-      }
-    })
-
-    htmlAttributes?.forEach((attribute) => {
-      const elementAttributeValue = element.getAttribute(attribute.name)
-
-      if (
-        typeof attribute.value === "string" &&
-        elementAttributeValue !== attribute.value
-      ) {
-        throw new Error(
-          `Expected element: '${getElementString(
-            element
-          )}' to have attribute '${attribute.name}' = '${attribute.value}'`
-        )
-      } else if (typeof attribute.value === "boolean") {
-        const elementHasAttribute = element.hasAttribute(attribute.name)
-
-        if (attribute.value === true && !elementHasAttribute) {
+    if (cssProperties) {
+      Object.entries(cssProperties).forEach(([propertyName, propertyValue]) => {
+        const elementPropertyValue =
+          element.style.getPropertyValue(propertyName)
+        if (
+          typeof propertyValue === "string" &&
+          elementPropertyValue !== propertyValue
+        ) {
           throw new Error(
             `Expected element: '${getElementString(
               element
-            )}' to have attribute '${attribute.name}'`
+            )}' to have inline CSS property '${propertyName}: ${propertyValue}'`
           )
-        } else if (attribute.value === false && elementHasAttribute) {
+        } else if (propertyValue === null && elementPropertyValue !== "") {
+          // Property value should be the empty string to signify that inline property
+          // doesn't exist
           throw new Error(
             `Expected element: '${getElementString(
               element
-            )}' not to have attribute '${attribute.name}'`
+            )}' not to have inline CSS property '${propertyName}'`
           )
         }
-      }
-    })
+      })
+    }
+
+    if (htmlAttributes) {
+      Object.entries(htmlAttributes).forEach(
+        ([attributeName, attributeValue]) => {
+          const elementAttributeValue = element.getAttribute(attributeName)
+
+          if (
+            typeof attributeValue === "string" &&
+            elementAttributeValue !== attributeValue
+          ) {
+            throw new Error(
+              `Expected element: '${getElementString(
+                element
+              )}' to have attribute '${attributeName}' = '${attributeValue}'`
+            )
+          } else if (typeof attributeValue === "boolean") {
+            const elementHasAttribute = element.hasAttribute(attributeName)
+
+            if (attributeValue === true && !elementHasAttribute) {
+              throw new Error(
+                `Expected element: '${getElementString(
+                  element
+                )}' to have attribute '${attributeName}'`
+              )
+            } else if (attributeValue === false && elementHasAttribute) {
+              throw new Error(
+                `Expected element: '${getElementString(
+                  element
+                )}' not to have attribute '${attributeName}'`
+              )
+            }
+          }
+        }
+      )
+    }
 
     if (!isUIElementStaticPropertySet(propertySet)) return
+    if (!propertySet.variableHTMLAttributes) return
 
-    propertySet.variableHTMLAttributes?.forEach((attribute) => {
-      /**
-       * Trigger error throwing attribute getting functions
-       */
+    Object.entries(propertySet.variableHTMLAttributes).forEach(
+      ([attributeName, attributeType]) => {
+        /**
+         * Trigger error throwing attribute getting functions
+         */
 
-      if (attribute.type === "non-empty-string")
-        forceGetElementNonEmptyAttribute(element, attribute.name)
-      else if (attribute.type === "integer")
-        forceGetElementIntegerAttribute(element, attribute.name, "any")
-      else if (attribute.type === "non-negative-integer")
-        forceGetElementIntegerAttribute(element, attribute.name, "non-negative")
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      else if (attribute.type === "positive-integer")
-        forceGetElementIntegerAttribute(element, attribute.name, "positive")
-    })
+        if (attributeType === "non-empty-string")
+          forceGetElementNonEmptyAttribute(element, attributeName)
+        else if (attributeType === "integer")
+          forceGetElementIntegerAttribute(element, attributeName, "any")
+        else if (attributeType === "non-negative-integer")
+          forceGetElementIntegerAttribute(
+            element,
+            attributeName,
+            "non-negative"
+          )
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        else if (attributeType === "positive-integer")
+          forceGetElementIntegerAttribute(element, attributeName, "positive")
+      }
+    )
   }
 
   /**
@@ -1048,23 +1062,29 @@ class UIComponent {
      */
     const deferredHidingProperties = []
 
-    htmlAttributes?.forEach((attribute) => {
-      if (attribute.name === "hidden" && attribute.value === true) {
-        deferredHidingProperties.push("HTML_HIDDEN")
-        return
-      }
+    if (htmlAttributes) {
+      Object.entries(htmlAttributes).forEach(
+        ([attributeName, attributeValue]) => {
+          if (attributeName === "hidden" && attributeValue === true) {
+            deferredHidingProperties.push("HTML_HIDDEN")
+            return
+          }
 
-      setElementHTMLAttribute(element, attribute.name, attribute.value)
-    })
+          setElementHTMLAttribute(element, attributeName, attributeValue)
+        }
+      )
+    }
 
-    cssProperties?.forEach((property) => {
-      if (property.name === "display" && property.value === "none") {
-        deferredHidingProperties.push("CSS_DISPLAY_NONE")
-        return
-      }
+    if (cssProperties) {
+      Object.entries(cssProperties).forEach(([propertyName, propertyValue]) => {
+        if (propertyName === "display" && propertyValue === "none") {
+          deferredHidingProperties.push("CSS_DISPLAY_NONE")
+          return
+        }
 
-      setElementInlineCSSProperty(element, property.name, property.value)
-    })
+        setElementInlineCSSProperty(element, propertyName, propertyValue)
+      })
+    }
 
     const setDeferredHidingProperties = () => {
       deferredHidingProperties.forEach((property) => {
@@ -1414,19 +1434,19 @@ class Popover extends UIComponent {
     /** @satisfies {UIComponentManagedElementPropertySets} */
     const properties = {
       trigger: {
-        htmlAttributes: [
-          { name: "aria-expanded", value: ariaExpanded },
-          { name: "data-state", value: dataState },
-          { name: "data-controller", value: controller }
-        ]
+        htmlAttributes: {
+          "aria-expanded": ariaExpanded,
+          "data-state": dataState,
+          "data-controller": controller
+        }
       },
 
       content: {
-        cssProperties: [{ name: "display", value: display }],
-        htmlAttributes: [
-          { name: "data-state", value: dataState },
-          { name: "data-controller", value: controller }
-        ]
+        cssProperties: { display },
+        htmlAttributes: {
+          "data-state": dataState,
+          "data-controller": controller
+        }
       }
     }
 
@@ -1439,22 +1459,22 @@ class Popover extends UIComponent {
     /** @satisfies {UIComponentStaticElementPropertySets} */
     const properties = {
       trigger: {
-        htmlAttributes: [
-          { name: "aria-haspopup", value: "dialog" },
-          {
-            name: "aria-controls",
-            // Aria-controls should be the id of content
-            value: forceGetElementNonEmptyAttribute(elements.content, "id")
-          }
-        ]
+        htmlAttributes: {
+          "aria-haspopup": "dialog",
+          // Aria-controls should be the id of content
+          "aria-controls": forceGetElementNonEmptyAttribute(
+            elements.content,
+            "id"
+          )
+        }
       },
 
       content: {
-        variableHTMLAttributes: [{ name: "id", type: "non-empty-string" }],
-        htmlAttributes: [
-          { name: "tabindex", value: "-1" },
-          { name: "role", value: "dialog" }
-        ]
+        variableHTMLAttributes: { id: "non-empty-string" },
+        htmlAttributes: {
+          tabindex: "-1",
+          role: "dialog"
+        }
       }
     }
 
@@ -1892,19 +1912,19 @@ class DropdownMenu extends UIComponent {
     /** @satisfies {UIComponentManagedElementPropertySets} */
     const properties = {
       trigger: {
-        htmlAttributes: [
-          { name: "aria-expanded", value: ariaExpanded },
-          { name: "data-state", value: dataState },
-          { name: "data-controller", value: state.controller }
-        ]
+        htmlAttributes: {
+          "aria-expanded": ariaExpanded,
+          "data-state": dataState,
+          "data-controller": state.controller
+        }
       },
 
       content: {
-        cssProperties: [{ name: "display", value: display }],
-        htmlAttributes: [
-          { name: "data-state", value: dataState },
-          { name: "data-controller", value: state.controller }
-        ]
+        cssProperties: { display },
+        htmlAttributes: {
+          "data-state": dataState,
+          "data-controller": state.controller
+        }
       },
 
       items: config.elements.items.map((item, index) => {
@@ -1913,10 +1933,10 @@ class DropdownMenu extends UIComponent {
 
         return {
           root: {
-            htmlAttributes: [
-              { name: "tabindex", value: tabIndex },
-              { name: "data-highlighted", value: highlighted }
-            ]
+            htmlAttributes: {
+              tabindex: tabIndex,
+              "data-highlighted": highlighted
+            }
           }
         }
       })
@@ -1931,27 +1951,27 @@ class DropdownMenu extends UIComponent {
     /** @satisfies {UIComponentStaticElementPropertySets} */
     const staticProperties = {
       trigger: {
-        htmlAttributes: [
-          { name: "aria-haspopup", value: "true" },
-          {
-            name: "aria-controls",
-            value: forceGetElementNonEmptyAttribute(elements.content, "id")
-          }
-        ]
+        htmlAttributes: {
+          "aria-haspopup": "true",
+          "aria-controls": forceGetElementNonEmptyAttribute(
+            elements.content,
+            "id"
+          )
+        }
       },
 
       content: {
-        variableHTMLAttributes: [{ name: "id", type: "non-empty-string" }],
-        htmlAttributes: [
-          { name: "role", value: "menu" },
-          { name: "tabindex", value: "-1" },
-          { name: "aria-orientation", value: "vertical" }
-        ]
+        variableHTMLAttributes: { id: "non-empty-string" },
+        htmlAttributes: {
+          role: "menu",
+          tabindex: "-1",
+          "aria-orientation": "vertical"
+        }
       },
 
       items: elements.items.map(() => ({
         root: {
-          htmlAttributes: [{ name: "role", value: "menuitem" }]
+          htmlAttributes: { role: "menuitem" }
         }
       }))
     }
@@ -2058,15 +2078,15 @@ class Hideable extends UIComponent {
     const dataHidden = String(isHidden)
     const display = isHidden ? "none" : null
 
-    const elementsHTMLAttributes = [
-      { name: "data-hidden", value: dataHidden },
-      { name: "data-controller", value: controller }
-    ]
+    const elementsHTMLAttributes = {
+      "data-hidden": dataHidden,
+      "data-controller": controller
+    }
 
     /** @satisfies {UIComponentManagedElementPropertySets} */
     const properties = {
       root: {
-        cssProperties: [{ name: "display", value: display }],
+        cssProperties: { display },
         htmlAttributes: elementsHTMLAttributes
       },
       trigger: { htmlAttributes: elementsHTMLAttributes }
@@ -2200,33 +2220,31 @@ class Progress extends UIComponent {
       _state: { currentValue, controller }
     } = this
 
-    const sharedHTMLAttributes = [
-      { name: "data-value", value: String(currentValue) },
-      { name: "data-controller", value: controller }
-    ]
+    const sharedHTMLAttributes = {
+      "data-value": String(currentValue),
+      "data-controller": controller
+    }
 
     /** @satisfies {UIComponentManagedElementPropertySets} */
     const properties = {
       root: {
-        cssProperties: [
-          {
-            name: Progress.CSSVariables.RootProgressPercent,
-            value: `${toPercent(currentValue, max, min)}`
-          }
-        ],
-        htmlAttributes: [
+        cssProperties: {
+          [Progress.CSSVariables.RootProgressPercent]: `${toPercent(
+            currentValue,
+            max,
+            min
+          )}`
+        },
+        htmlAttributes: {
           ...sharedHTMLAttributes,
-          { name: "aria-valuenow", value: String(currentValue) },
-          {
-            name: "aria-valuetext",
-            value: getValueText
-              ? getValueText(currentValue, max, min)
-              : `${toPercent(currentValue, max, min)}%`
-          }
-        ]
+          "aria-valuenow": String(currentValue),
+          "aria-valuetext": getValueText
+            ? getValueText(currentValue, max, min)
+            : `${toPercent(currentValue, max, min)}%`
+        }
       },
 
-      indicator: { htmlAttributes: [...sharedHTMLAttributes] }
+      indicator: { htmlAttributes: { ...sharedHTMLAttributes } }
     }
 
     return properties
@@ -2243,16 +2261,16 @@ class Progress extends UIComponent {
     /** @satisfies {UIComponentStaticElementPropertySets} */
     const properties = {
       root: {
-        htmlAttributes: [
-          { name: "aria-valuemin", value: minAsString },
-          { name: "aria-valuemax", value: maxAsString },
-          { name: "role", value: "progressbar" },
-          { name: "data-max", value: maxAsString }
-        ]
+        htmlAttributes: {
+          "aria-valuemin": minAsString,
+          "aria-valuemax": maxAsString,
+          role: "progressbar",
+          "data-max": maxAsString
+        }
       },
 
       indicator: {
-        htmlAttributes: [{ name: "data-max", value: maxAsString }]
+        htmlAttributes: { "data-max": maxAsString }
       }
     }
 
@@ -2403,10 +2421,10 @@ class Collapsible extends UIComponent {
     const ariaExpanded = `${!isCollapsed}`
     const display = isCollapsed ? "none" : null
 
-    const sharedHTMLAttributes = [
-      { name: "data-state", value: dataState },
-      { name: "data-controller", value: controller }
-    ]
+    const sharedHTMLAttributes = {
+      "data-state": dataState,
+      "data-controller": controller
+    }
 
     const shouldIncludeVars =
       constructionStage > UIComponent.ConstructionStages.ValidatingStaticMarkup
@@ -2421,27 +2439,21 @@ class Collapsible extends UIComponent {
 
     /** @satisfies {UIComponentManagedElementPropertySets} */
     const properties = {
-      root: { htmlAttributes: [...sharedHTMLAttributes] },
+      root: { htmlAttributes: { ...sharedHTMLAttributes } },
       trigger: {
-        htmlAttributes: [
+        htmlAttributes: {
           ...sharedHTMLAttributes,
-          { name: "aria-expanded", value: ariaExpanded }
-        ]
+          "aria-expanded": ariaExpanded
+        }
       },
 
       content: {
-        htmlAttributes: [...sharedHTMLAttributes],
-        cssProperties: [
-          { name: "display", value: display },
-          {
-            name: Collapsible.CSSVariables.ContentHeight,
-            value: contentHeightCSSVar
-          },
-          {
-            name: Collapsible.CSSVariables.ContentWidth,
-            value: contentWidthCSSVar
-          }
-        ]
+        htmlAttributes: { ...sharedHTMLAttributes },
+        cssProperties: {
+          display,
+          [Collapsible.CSSVariables.ContentHeight]: contentHeightCSSVar,
+          [Collapsible.CSSVariables.ContentWidth]: contentWidthCSSVar
+        }
       }
     }
 
@@ -2456,16 +2468,16 @@ class Collapsible extends UIComponent {
     /** @satisfies {UIComponentStaticElementPropertySets} */
     const properties = {
       content: {
-        variableHTMLAttributes: [{ name: "id", type: "non-empty-string" }]
+        variableHTMLAttributes: { id: "non-empty-string" }
       },
 
       trigger: {
-        htmlAttributes: [
-          {
-            name: "aria-controls",
-            value: forceGetElementNonEmptyAttribute(elements.content, "id")
-          }
-        ]
+        htmlAttributes: {
+          "aria-controls": forceGetElementNonEmptyAttribute(
+            elements.content,
+            "id"
+          )
+        }
       }
     }
 
@@ -2583,7 +2595,7 @@ class Checkbox extends UIComponent {
     /** @satisfies {UIComponentStaticElementPropertySets} */
     const properties = {
       root: {
-        htmlAttributes: [{ name: "role", value: "checkbox" }]
+        htmlAttributes: { role: "checkbox" }
       }
     }
 
@@ -2600,14 +2612,14 @@ class Checkbox extends UIComponent {
     /** @satisfies {UIComponentManagedElementPropertySets} */
     const properties = {
       root: {
-        htmlAttributes: [
-          { name: "aria-checked", value: `${isChecked}` },
-          { name: "data-state", value: dataState }
-        ]
+        htmlAttributes: {
+          "aria-checked": `${isChecked}`,
+          "data-state": dataState
+        }
       },
 
       indicator: {
-        htmlAttributes: [{ name: "data-state", value: dataState }]
+        htmlAttributes: { "data-state": dataState }
       }
     }
 
@@ -2847,10 +2859,10 @@ class Accordion extends UIComponent {
           ? `${item.contentArea.scrollWidth}px`
           : null
 
-        const itemStateAndController = [
-          { name: "data-state", value: dataState },
-          { name: "data-controller", value: controller }
-        ]
+        const itemStateAndController = {
+          "data-state": dataState,
+          "data-controller": controller
+        }
 
         return {
           root: {
@@ -2862,24 +2874,19 @@ class Accordion extends UIComponent {
           },
 
           trigger: {
-            htmlAttributes: [
+            htmlAttributes: {
               ...itemStateAndController,
-              { name: "aria-expanded", value: ariaExpanded }
-            ]
+              "aria-expanded": ariaExpanded
+            }
           },
 
           content: {
-            cssProperties: [
-              { name: "display", value: contentDisplay },
-              {
-                name: Accordion.CSSVariables.ItemContentHeight,
-                value: itemContentHeightCSSVar
-              },
-              {
-                name: Accordion.CSSVariables.ItemContentWidth,
-                value: itemContentWidthCSSVar
-              }
-            ],
+            cssProperties: {
+              display: contentDisplay,
+              [Accordion.CSSVariables.ItemContentHeight]:
+                itemContentHeightCSSVar,
+              [Accordion.CSSVariables.ItemContentWidth]: itemContentWidthCSSVar
+            },
             htmlAttributes: itemStateAndController
           }
         }
@@ -2907,23 +2914,23 @@ class Accordion extends UIComponent {
     const properties = {
       items: elements.items.map(({ __refs: item }) => ({
         trigger: {
-          variableHTMLAttributes: [{ name: "id", type: "non-empty-string" }],
-          htmlAttributes: [
-            {
-              name: "aria-controls",
-              value: forceGetElementNonEmptyAttribute(item.content, "id")
-            }
-          ]
+          variableHTMLAttributes: { id: "non-empty-string" },
+          htmlAttributes: {
+            "aria-controls": forceGetElementNonEmptyAttribute(
+              item.content,
+              "id"
+            )
+          }
         },
 
         content: {
-          variableHTMLAttributes: [{ name: "id", type: "non-empty-string" }],
-          htmlAttributes: [
-            {
-              name: "aria-labelledby",
-              value: forceGetElementNonEmptyAttribute(item.trigger, "id")
-            }
-          ]
+          variableHTMLAttributes: { id: "non-empty-string" },
+          htmlAttributes: {
+            "aria-labelledby": forceGetElementNonEmptyAttribute(
+              item.trigger,
+              "id"
+            )
+          }
         }
       }))
     }
