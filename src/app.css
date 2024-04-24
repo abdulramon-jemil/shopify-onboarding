@@ -665,7 +665,7 @@ img {
 }
 
 .site-logo {
-  min-width: max-content;
+  flex: 1 0 0;
 }
 
 .site-logo__link {
@@ -684,13 +684,15 @@ img {
   height: 32px;
 }
 
-.site__search {
+.search-input {
   flex: 0 1 480px;
 }
 
 .access-panel {
   height: 100%;
   position: relative;
+
+  flex: 1 0 0;
 
   display: flex;
   justify-content: flex-end;
